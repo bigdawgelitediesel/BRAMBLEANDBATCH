@@ -263,6 +263,16 @@ function renderFreebiePromo() {
   const f = SITE.freebie;
   if (!f || preorderState() === "closed") return; // hide once this round is over
   const when = SITE.preorder.closesOn ? `Pre-orders ${opensText()} through ${dueText()}` : "";
+  if (!$("po-status")) {
+    // Main page: slim one-line strip
+    box.classList.add("freebie-strip");
+    box.innerHTML = `
+      <span class="freebie-badge">This pre-order only</span>
+      <p>FREE <strong>${f.options.map((o) => esc(o.name)).join("</strong> or <strong>")}</strong> with every pre-order${SITE.preorder.closesOn ? ` &middot; ${opensText().slice(0, 5)} to ${dueText().slice(0, 5)}` : ""}</p>
+      <a href="preorder.html">Pre-order &rarr;</a>`;
+    box.hidden = false;
+    return;
+  }
   box.innerHTML = `
     <span class="freebie-badge">This pre-order only</span>
     <h2>A free holiday treat with every pre-order</h2>
