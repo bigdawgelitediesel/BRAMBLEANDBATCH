@@ -524,3 +524,4 @@ body.no-scroll { overflow: hidden; }
 .freebie-strip a { font-weight: 700; color: var(--raspberry); text-decoration: none; white-space: nowrap; }
 .freebie-strip a:hover { text-decoration: underline; }
 @media (max-width: 560px) { .freebie-promo.freebie-strip { border-radius: 20px; text-align: center; } }
+.freebie-promo-tight.freebie-strip { margin: 0.4rem auto 1.8rem; }

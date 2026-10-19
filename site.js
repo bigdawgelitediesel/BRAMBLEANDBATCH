@@ -262,26 +262,13 @@ function renderFreebiePromo() {
   const box = $("freebie-promo");
   const f = SITE.freebie;
   if (!f || preorderState() === "closed") return; // hide once this round is over
-  const when = SITE.preorder.closesOn ? `Pre-orders ${opensText()} through ${dueText()}` : "";
-  if (!$("po-status")) {
-    // Main page: slim one-line strip
-    box.classList.add("freebie-strip");
-    box.innerHTML = `
-      <span class="freebie-badge">This pre-order only</span>
-      <p>FREE <strong>${f.options.map((o) => esc(o.name)).join("</strong> or <strong>")}</strong> with every pre-order${SITE.preorder.closesOn ? ` &middot; ${opensText().slice(0, 5)} to ${dueText().slice(0, 5)}` : ""}</p>
-      <a href="preorder.html">Pre-order &rarr;</a>`;
-    box.hidden = false;
-    return;
-  }
+  // Pre-order page already shows the dates right above, so only the main page repeats them
+  const dates = SITE.preorder.closesOn && !$("po-status") ? ` &middot; ${opensText().slice(0, 5)} to ${dueText().slice(0, 5)}` : "";
+  box.classList.add("freebie-strip");
   box.innerHTML = `
     <span class="freebie-badge">This pre-order only</span>
-    <h2>A free holiday treat with every pre-order</h2>
-    <p class="freebie-sub">Pick one, on us. Once this pre-order closes, it's gone.</p>
-    <div class="freebie-choices">${f.options.map((o) => `
-      <div class="freebie-choice"><strong>${esc(o.name)}</strong><span>${esc(o.desc)}</span><em>FREE</em></div>`).join('<div class="freebie-or">or</div>')}
-    </div>
-    ${when ? `<p class="freebie-when">${when}</p>` : ""}
-    ${$("po-status") ? "" : '<a href="preorder.html" class="btn">Pre-order now</a>'}`;
+    <p>FREE <strong>${f.options.map((o) => esc(o.name)).join("</strong> or <strong>")}</strong> with every pre-order${dates}</p>
+    ${$("po-status") ? "" : '<a href="preorder.html">Pre-order &rarr;</a>'}`;
   box.hidden = false;
 }
 
