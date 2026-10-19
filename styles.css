@@ -367,3 +367,4 @@ details p { color: var(--muted); margin: 0.7rem 0 0.2rem; }
   .story-photo { max-width: 360px; margin: 0 auto; }
   .values { grid-template-columns: 1fr; }
 }
+.footer a.owner-link { font-weight: 400; color: inherit; }
