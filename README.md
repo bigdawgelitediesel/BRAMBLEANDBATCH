@@ -41,7 +41,7 @@ vercel deploy --prod --yes
 
 - [ ] Real prices from Abby (placeholders: Sourdough Loaf $12, Dinner Rolls half dozen $10, Brown Butter Chocolate Chip Cookies $4)
 - [ ] Confirm per-order limits (placeholders: 4 / 4 / 24) and dinner roll description
-- [ ] Abby's Instagram link
+- [x] Abby's Instagram link (@thebrambleandbatch)
 - [ ] Dinner roll photo (shows the B&B monogram for now)
 - [ ] Abby reads and adjusts the "Our Story" text (drafted in her voice)
 - [ ] Pickup date and place for pre-orders

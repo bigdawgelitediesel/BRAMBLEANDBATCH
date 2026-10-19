@@ -3,7 +3,7 @@
 //  The website AND the order system both read from here.
 // ============================================================
 const SITE = {
-  instagram: "https://instagram.com/",   // TODO: Abby's Instagram link
+  instagram: "https://www.instagram.com/thebrambleandbatch/",   // @thebrambleandbatch
 
   nextPopup: {
     // Leave start blank ("") to show "Date coming soon"
