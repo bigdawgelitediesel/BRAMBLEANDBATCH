@@ -14,12 +14,18 @@ const SITE = {
     note: "The full menu drops the week of the pop-up.",
   },
 
+  // How people pay. Venmo asks for the last 4 of her phone the first time someone pays her.
+  payment: {
+    venmo: "AbigailAnneF",
+    venmoLast4: "6176",
+  },
+
   // Pre-orders open and close on their own based on these dates (Mountain time).
   preorder: {
     forceClosed: false,                       // true = closed no matter what the dates say
     opensOn: "2026-11-09T00:00:00-07:00",     // shows "Pre-orders open 11/09/2026" until then
     closesOn: "",                             // e.g. "2026-11-12T20:00:00-07:00", blank = stays open
-    pickup: "Pick up at the next pop-up. Pay when you pick up.",
+    pickup: "Pick up at the next pop-up. Pay by Venmo or when you pick up.",
     closedMessage: "Pre-orders are closed right now. Check back when the window opens, or follow on Instagram so you don't miss it.",
     openMessage: "Reserve your loaves and cookies before they're gone.",
   },
@@ -32,7 +38,7 @@ const SITE = {
     { name: "Chocolate Chip Sourdough", desc: "Our sourdough loaded with chocolate chips. Breakfast, dessert, both.", price: 14, tag: "new", max: 4 },
     { name: "Italian Herb & Cheese Sourdough", desc: "Sourdough baked with Italian herbs and cheese. Made for dipping, toasting, and sandwiches.", price: 14, tag: "new", max: 4 },
     { name: "Dinner Rolls (dozen)", desc: "12 soft, buttery, pull-apart rolls. Made for the holiday table.", price: 12, tag: "", max: 4 },
-    { name: "Brown Butter Chocolate Chip Cookies (6)", desc: "Half a dozen. Brown butter dough, big chocolate chunks, crisp edges, soft middle, flaky sea salt.", price: 6, tag: "limited", img: "img/cookies.jpg", max: 4 },
+    { name: "Brown Butter Chocolate Chip Cookies (6)", desc: "Half a dozen. Brown butter dough, big chocolate chunks, crisp edges, soft middle, flaky sea salt.", price: 12, tag: "limited", img: "img/cookies.jpg", max: 4 },
   ],
 };
 // ============================================================

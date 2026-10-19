@@ -438,3 +438,11 @@ body.no-scroll { overflow: hidden; }
 .orders tr.is-cancelled td:not(.flags) { opacity: 0.45; text-decoration: line-through; }
 .orders tr.is-cancelled td small, .orders tr.is-cancelled td .early-tag { text-decoration: none; }
 .orders td a[href^="tel:"], .early-tag { white-space: nowrap; }
+
+/* Venmo payment info */
+.po-pay { font-size: 0.92rem; color: var(--muted); background: #fff; border: 1px dashed var(--line); border-radius: 14px; padding: 0.8rem 1rem; margin: -0.6rem 0 1.4rem; }
+.po-pay strong { color: var(--ink); }
+.po-venmo { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 1.1rem 1.2rem; margin: 1rem 0; }
+.po-venmo p { margin: 0 0 0.6rem; }
+.btn-venmo { background: #008cff; border-color: #008cff; color: #fff; }
+.btn-venmo:hover { background: #0074d4; border-color: #0074d4; }

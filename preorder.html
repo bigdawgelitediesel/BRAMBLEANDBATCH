@@ -48,7 +48,8 @@
   <form id="po-form" class="po-form" hidden novalidate>
     <p id="po-pickup" class="po-pickup"></p>
     <div id="po-items" class="po-items"></div>
-    <div class="po-total-row"><span>Total (pay at pickup)</span><strong id="po-total">$0</strong></div>
+    <div class="po-total-row"><span>Total</span><strong id="po-total">$0</strong></div>
+    <p id="po-pay" class="po-pay"></p>
     <label>Name<input name="name" autocomplete="name" required maxlength="80"></label>
     <div class="po-two">
       <label>Phone<input name="phone" type="tel" autocomplete="tel" maxlength="30"></label>
@@ -63,7 +64,12 @@
   <div id="po-done" class="po-done" hidden>
     <h2>You're on the list!</h2>
     <ul id="po-done-list"></ul>
-    <p>Total due at pickup: <strong id="po-done-total"></strong></p>
+    <p>Total: <strong id="po-done-total"></strong></p>
+    <div class="po-venmo">
+      <p><strong>How to pay:</strong> Venmo <strong id="po-done-venmo"></strong> or pay when you pick up.</p>
+      <p class="po-small">Put <strong>Order #<span id="po-done-id2"></span></strong> in the Venmo note. If Venmo asks for the last 4 digits of her phone, it's <strong id="po-done-last4"></strong>.</p>
+      <a id="po-venmo-link" class="btn btn-venmo" target="_blank" rel="noopener">Pay with Venmo</a>
+    </div>
     <p class="po-small">Order # <span id="po-done-id"></span>. Abby will reach out if anything changes.</p>
   </div>
 

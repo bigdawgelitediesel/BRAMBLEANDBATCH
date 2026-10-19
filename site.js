@@ -132,6 +132,7 @@ function buildOrderForm() {
   buildOrderForm.done = true;
   const items = SITE.menu.filter((m) => m.preorder !== false);
   $("po-pickup").textContent = SITE.preorder.pickup;
+  $("po-pay").innerHTML = `Pay by Venmo <strong>@${esc(SITE.payment.venmo)}</strong> (last 4 of phone: ${esc(SITE.payment.venmoLast4)}) or pay when you pick up. You'll get your order # after you submit.`;
   $("po-items").innerHTML = items.map((m, i) => `
     <div class="qty-row">
       <div><strong>${esc(m.name)}</strong><span>${money(m.price)} each</span></div>
@@ -178,6 +179,11 @@ function buildOrderForm() {
       $("po-done-list").innerHTML = (data.items || []).map((it) => `<li>${it.qty} &times; ${esc(it.name)}</li>`).join("");
       $("po-done-total").textContent = money(data.total || 0);
       $("po-done-id").textContent = data.id || "";
+      const pay = SITE.payment;
+      $("po-done-venmo").textContent = "@" + pay.venmo;
+      $("po-done-id2").textContent = data.id || "";
+      $("po-done-last4").textContent = pay.venmoLast4;
+      $("po-venmo-link").href = `https://venmo.com/${pay.venmo}?txn=pay&amount=${data.total || 0}&note=${encodeURIComponent("Bramble & Batch order #" + (data.id || ""))}`;
       $("po-done").hidden = false;
       $("po-done").scrollIntoView({ behavior: "smooth", block: "center" });
     } catch (ex) {
