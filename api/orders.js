@@ -3,7 +3,7 @@
 //
 // POST   /api/orders                      -> customer places an order (only while pre-orders are open)
 // GET    /api/orders     [x-admin-password] -> all orders + running totals
-// PATCH  /api/orders     [x-admin-password] {id, pickedUp} -> mark picked up / not
+// PATCH  /api/orders     [x-admin-password] {id, field, value} -> set paid / ready (bagged) / pickedUp
 // DELETE /api/orders?id= [x-admin-password] -> remove an order
 
 const { put, get, list, del } = require("@vercel/blob");
@@ -56,13 +56,16 @@ async function allOrders() {
 
 function totals(orders) {
   const t = {};
-  SITE.menu.forEach((m) => (t[m.name] = { qty: 0, revenue: 0, pickedUp: 0, collected: 0 }));
+  const blank = () => ({ qty: 0, revenue: 0, ready: 0, pickedUp: 0, collected: 0 });
+  SITE.menu.forEach((m) => (t[m.name] = blank()));
   for (const o of orders) {
     for (const it of o.items) {
-      t[it.name] = t[it.name] || { qty: 0, revenue: 0, pickedUp: 0, collected: 0 };
+      t[it.name] = t[it.name] || blank();
       t[it.name].qty += it.qty;
       t[it.name].revenue += it.qty * it.price;
-      if (o.pickedUp) { t[it.name].pickedUp += it.qty; t[it.name].collected += it.qty * it.price; }
+      if (o.ready) t[it.name].ready += it.qty;
+      if (o.pickedUp) t[it.name].pickedUp += it.qty;
+      if (o.paid) t[it.name].collected += it.qty * it.price;
     }
   }
   return t;
@@ -100,6 +103,8 @@ module.exports = async (req, res) => {
       const order = {
         id, createdAt, name, phone, email, notes, items,
         total: items.reduce((s, it) => s + it.qty * it.price, 0),
+        paid: false,
+        ready: false,
         pickedUp: false,
         path: `${PREFIX}${createdAt.replace(/[:.]/g, "-")}-${id}.json`,
       };
@@ -118,7 +123,8 @@ module.exports = async (req, res) => {
       const b = await readBody(req);
       const order = await findOrder(b.id);
       if (!order) return send(res, 404, { error: "Order not found." });
-      order.pickedUp = !!b.pickedUp;
+      if (!["paid", "ready", "pickedUp"].includes(b.field)) return send(res, 400, { error: "Unknown field." });
+      order[b.field] = !!b.value;
       await writeOrder(order);
       return send(res, 200, { ok: true });
     }

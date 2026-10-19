@@ -397,3 +397,14 @@ details p { color: var(--muted); margin: 0.7rem 0 0.2rem; }
 body.no-scroll { overflow: hidden; }
 @keyframes promo-fade { from { opacity: 0; } }
 @keyframes promo-pop { from { opacity: 0; transform: translateY(16px) scale(0.96); } }
+
+/* Portal order status checkboxes */
+.portal-filter { font: inherit; padding: 0.6rem 0.8rem; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); }
+.orders td.flags { white-space: nowrap; }
+.flag {
+  display: flex; align-items: center; gap: 0.45rem; cursor: pointer;
+  font-size: 0.85rem; font-weight: 700; color: var(--muted);
+  padding: 0.3rem 0.6rem; border-radius: 999px; border: 1px solid var(--line); margin-bottom: 0.35rem; background: #fff;
+}
+.flag.on { color: #3f5732; background: #e3e8d8; border-color: #c9d4b8; }
+.flag input { width: 16px !important; height: 16px !important; margin: 0; }
