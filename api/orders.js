@@ -81,7 +81,16 @@ module.exports = async (req, res) => {
     if (req.method === "POST") {
       const b = await readBody(req);
       if (b.website) return send(res, 200, { ok: true }); // honeypot: bots fill hidden field
-      if (preorderState() !== "open") return send(res, 403, { error: "Pre-orders are closed right now." });
+
+      // Early access: a code (env EARLY_ACCESS_CODE) lets people order before pre-orders open
+      const code = process.env.EARLY_ACCESS_CODE;
+      const early = !!code && clean(b.earlyCode, 60).toLowerCase() === code.toLowerCase();
+      if (b.action === "checkCode") {
+        await new Promise((r) => setTimeout(r, 400)); // slow down guessing
+        return send(res, early ? 200 : 403, early ? { ok: true } : { error: "That code didn't work." });
+      }
+      const isOpen = preorderState() === "open";
+      if (!isOpen && !early) return send(res, 403, { error: "Pre-orders are closed right now." });
 
       const name = clean(b.name, 80);
       const phone = clean(b.phone, 30);
@@ -103,6 +112,7 @@ module.exports = async (req, res) => {
       const order = {
         id, createdAt, name, phone, email, notes, items,
         total: items.reduce((s, it) => s + it.qty * it.price, 0),
+        earlyAccess: !isOpen,
         paid: false,
         ready: false,
         pickedUp: false,

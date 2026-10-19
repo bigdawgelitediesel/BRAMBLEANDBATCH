@@ -408,3 +408,16 @@ body.no-scroll { overflow: hidden; }
 }
 .flag.on { color: #3f5732; background: #e3e8d8; border-color: #c9d4b8; }
 .flag input { width: 16px !important; height: 16px !important; margin: 0; }
+
+/* Early access code box */
+.early { max-width: 420px; margin: 0 auto 2rem; text-align: left; }
+.early label { display: block; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.4rem; text-align: center; }
+.early-row { display: flex; gap: 0.5rem; }
+.early-row input {
+  flex: 1; min-width: 0; padding: 0.75rem 0.9rem; font: inherit; color: var(--ink);
+  background: #fff; border: 1px solid var(--line); border-radius: 999px;
+}
+.early-row input:focus { outline: 2px solid var(--gold); border-color: var(--gold); }
+.early-row .btn { padding: 0.75rem 1.3rem; cursor: pointer; font: inherit; font-weight: 700; }
+.early .po-error { text-align: center; margin-top: 0.6rem; }
+.early-tag { display: inline-block; margin-top: 0.3rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #7a5528; background: var(--gold-soft); padding: 0.15rem 0.5rem; border-radius: 999px; }

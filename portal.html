@@ -135,7 +135,7 @@ function render() {
 
   $("rows").innerHTML = shown.map((o) => `
     <tr class="${o.pickedUp ? "is-picked" : ""}">
-      <td><strong>${esc(o.name)}</strong><br><small>#${esc(o.id)}</small></td>
+      <td><strong>${esc(o.name)}</strong><br><small>#${esc(o.id)}</small>${o.earlyAccess ? `<br><span class="early-tag">Early access</span>` : ""}</td>
       <td>${o.phone ? `<a href="tel:${esc(o.phone)}">${esc(o.phone)}</a><br>` : ""}${o.email ? `<a href="mailto:${esc(o.email)}">${esc(o.email)}</a>` : ""}</td>
       <td>${o.items.map((it) => `${it.qty} &times; ${esc(it.name)}`).join("<br>")}</td>
       <td>${money(o.total)}</td>

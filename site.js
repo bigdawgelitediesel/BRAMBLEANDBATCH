@@ -74,6 +74,7 @@ function renderPreorder() {
   }
 
   $("po-message").textContent = p.closedMessage;
+  setupEarlyAccess();
   if (state === "upcoming") {
     const opens = new Date(p.opensOn);
     const mmddyyyy = opens.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric", timeZone: "America/Denver" });
@@ -84,7 +85,51 @@ function renderPreorder() {
   }
 }
 
+// Early access code box (only while pre-orders are closed). The server checks the code.
+let earlyCode = "";
+function setupEarlyAccess() {
+  const box = $("early");
+  const unlock = (code) => {
+    earlyCode = code;
+    try { sessionStorage.setItem("bb-early", code); } catch (e) {}
+    box.hidden = true;
+    $("po-countdown").hidden = true;
+    $("po-status").textContent = "Early access";
+    $("po-status").className = "status status-open";
+    $("po-headline").textContent = "You're in early!";
+    $("po-message").textContent = "Your early access code worked. Place your order before everyone else.";
+    buildOrderForm();
+  };
+  const check = async (code) => {
+    const r = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "checkCode", earlyCode: code }) });
+    return r.ok;
+  };
+  box.hidden = false;
+  box.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const code = $("early-code").value.trim();
+    const err = $("early-error");
+    err.hidden = true;
+    if (!code) return;
+    const btn = box.querySelector("button");
+    btn.disabled = true;
+    try {
+      if (await check(code)) unlock(code);
+      else { err.textContent = "That code didn't work. Double-check it and try again."; err.hidden = false; }
+    } catch (ex) {
+      err.textContent = "Couldn't check the code. Try again in a minute."; err.hidden = false;
+    }
+    btn.disabled = false;
+  });
+  // Remember a working code for this visit
+  let saved = "";
+  try { saved = sessionStorage.getItem("bb-early") || ""; } catch (e) {}
+  if (saved) check(saved).then((ok) => ok && unlock(saved)).catch(() => {});
+}
+
 function buildOrderForm() {
+  if (buildOrderForm.done) return;
+  buildOrderForm.done = true;
   const items = SITE.menu.filter((m) => m.preorder !== false);
   $("po-pickup").textContent = SITE.preorder.pickup;
   $("po-items").innerHTML = items.map((m, i) => `
@@ -119,7 +164,7 @@ function buildOrderForm() {
     err.hidden = true;
     const body = {
       name: form.name.value, phone: form.phone.value, email: form.email.value,
-      notes: form.notes.value, website: form.website.value, items: {},
+      notes: form.notes.value, website: form.website.value, earlyCode, items: {},
     };
     items.forEach((m, i) => (body.items[m.name] = qty(i)));
     const btn = $("po-submit");

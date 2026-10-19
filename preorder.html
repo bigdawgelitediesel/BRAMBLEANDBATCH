@@ -38,6 +38,15 @@
     <div><span id="po-m">0</span><small>min</small></div>
   </div>
 
+  <form id="early" class="early" hidden novalidate>
+    <label for="early-code">Have an early access code?</label>
+    <div class="early-row">
+      <input id="early-code" type="password" autocomplete="off" placeholder="Enter code" maxlength="60">
+      <button class="btn" type="submit">Unlock</button>
+    </div>
+    <p id="early-error" class="po-error" role="alert" hidden></p>
+  </form>
+
   <form id="po-form" class="po-form" hidden novalidate>
     <p id="po-pickup" class="po-pickup"></p>
     <div id="po-items" class="po-items"></div>
