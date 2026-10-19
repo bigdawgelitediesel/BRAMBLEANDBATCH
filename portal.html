@@ -44,7 +44,7 @@
       </div>
     </div>
 
-    <h2 class="portal-h2">Running totals &amp; revenue</h2>
+    <h2 class="portal-h2">Open orders: running totals &amp; revenue</h2>
     <div id="totals" class="totals totals-main"></div>
     <div id="item-totals" class="totals totals-items"></div>
 
@@ -65,7 +65,24 @@
         <tbody id="rows"></tbody>
       </table>
     </div>
-    <p id="empty" class="portal-empty" hidden>No orders yet.</p>
+    <p id="empty" class="portal-empty" hidden>No open orders.</p>
+
+    <section class="archive">
+      <p class="eyebrow">Archive</p>
+      <h2 class="portal-h2 archive-h2">Completed orders</h2>
+      <p class="portal-state">Orders move here automatically once they're paid, bagged, and picked up. Uncheck any box to move one back.</p>
+      <div id="archive-totals" class="totals totals-main"></div>
+      <div id="archive-items" class="totals totals-items"></div>
+      <details id="archive-list" class="archive-list">
+        <summary><span>Show completed orders (<span id="archive-count">0</span>)</span></summary>
+        <div class="table-wrap">
+          <table class="orders">
+            <thead><tr><th>Name</th><th>Contact</th><th>Items</th><th>Total</th><th>Status</th><th>Notes</th><th>Ordered</th><th></th></tr></thead>
+            <tbody id="archive-rows"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
   </section>
 
 </main>
@@ -131,9 +148,44 @@ const FILTERS = {
   cancelled: (o) => o.cancelled,
 };
 
+// An order is done (archived) once it's paid, bagged, and picked up
+const isDone = (o) => !o.cancelled && o.paid && o.ready && o.pickedUp;
+
+// Per-item totals for a list of orders, in menu order
+function itemTotals(list) {
+  const t = {};
+  SITE.menu.forEach((m) => (t[m.name] = { qty: 0, revenue: 0, ready: 0 }));
+  for (const o of list) for (const it of o.items) {
+    t[it.name] = t[it.name] || { qty: 0, revenue: 0, ready: 0 };
+    t[it.name].qty += it.qty;
+    t[it.name].revenue += it.qty * it.price;
+    if (o.ready) t[it.name].ready += it.qty;
+  }
+  return t;
+}
+
+function rowHtml(o) {
+  return `
+    <tr class="${o.cancelled ? "is-cancelled" : isDone(o) ? "" : o.pickedUp ? "is-picked" : ""}">
+      <td><strong>${esc(o.name)}</strong><br><small>#${esc(o.id)}</small>${o.earlyAccess ? `<br><span class="early-tag">Early access</span>` : ""}</td>
+      <td>${o.phone ? `<a href="tel:${esc(o.phone)}">${esc(o.phone)}</a><br>` : ""}${o.email ? `<a href="mailto:${esc(o.email)}">${esc(o.email)}</a>` : ""}</td>
+      <td>${o.items.map((it) => `${it.qty} &times; ${esc(it.name)}`).join("<br>")}</td>
+      <td>${money(o.total)}</td>
+      <td class="flags">${o.cancelled
+        ? `<span class="cancel-tag">Cancelled</span><button class="undo-btn" type="button" data-undo="${o.id}">Undo</button>`
+        : FLAGS.map(([f, label]) => `
+        <label class="flag ${o[f] ? "on" : ""}"><input type="checkbox" data-id="${o.id}" data-flag="${f}" ${o[f] ? "checked" : ""}> ${label}</label>`).join("")}</td>
+      <td class="notes">${esc(o.notes)}</td>
+      <td><small>${new Date(o.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</small></td>
+      <td>${o.cancelled || isDone(o) ? "" : `<button class="cancel-btn" type="button" data-cancel="${o.id}">Cancel order</button>`}</td>
+    </tr>`;
+}
+
 function render() {
-  const orders = data.orders.filter((o) => !o.cancelled); // totals only count live orders
-  const t = data.totals;
+  const open = data.orders.filter((o) => !isDone(o));
+  const done = data.orders.filter(isDone);
+  const orders = open.filter((o) => !o.cancelled); // open totals only count live orders
+  const t = itemTotals(orders);
   const count = (f) => orders.filter((o) => o[f]).length;
   const revenue = orders.reduce((s, o) => s + o.total, 0);
   const collected = orders.filter((o) => o.paid).reduce((s, o) => s + o.total, 0);
@@ -148,25 +200,26 @@ function render() {
 
   const q = $("search").value.trim().toLowerCase();
   const keep = FILTERS[$("filter").value] || FILTERS.all;
-  const shown = data.orders.filter((o) => keep(o) &&
-    (!q || [o.name, o.phone, o.email, o.id].join(" ").toLowerCase().includes(q)))
+  const match = (o) => !q || [o.name, o.phone, o.email, o.id].join(" ").toLowerCase().includes(q);
+  const shown = open.filter((o) => keep(o) && match(o))
     .sort((a, b) => (a.cancelled ? 1 : 0) - (b.cancelled ? 1 : 0)); // cancelled at the bottom
 
-  $("rows").innerHTML = shown.map((o) => `
-    <tr class="${o.cancelled ? "is-cancelled" : o.pickedUp ? "is-picked" : ""}">
-      <td><strong>${esc(o.name)}</strong><br><small>#${esc(o.id)}</small>${o.earlyAccess ? `<br><span class="early-tag">Early access</span>` : ""}</td>
-      <td>${o.phone ? `<a href="tel:${esc(o.phone)}">${esc(o.phone)}</a><br>` : ""}${o.email ? `<a href="mailto:${esc(o.email)}">${esc(o.email)}</a>` : ""}</td>
-      <td>${o.items.map((it) => `${it.qty} &times; ${esc(it.name)}`).join("<br>")}</td>
-      <td>${money(o.total)}</td>
-      <td class="flags">${o.cancelled
-        ? `<span class="cancel-tag">Cancelled</span><button class="undo-btn" type="button" data-undo="${o.id}">Undo</button>`
-        : FLAGS.map(([f, label]) => `
-        <label class="flag ${o[f] ? "on" : ""}"><input type="checkbox" data-id="${o.id}" data-flag="${f}" ${o[f] ? "checked" : ""}> ${label}</label>`).join("")}</td>
-      <td class="notes">${esc(o.notes)}</td>
-      <td><small>${new Date(o.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</small></td>
-      <td>${o.cancelled ? "" : `<button class="cancel-btn" type="button" data-cancel="${o.id}">Cancel order</button>`}</td>
-    </tr>`).join("");
-  $("empty").hidden = data.orders.length > 0;
+  $("rows").innerHTML = shown.map(rowHtml).join("");
+  $("empty").hidden = open.length > 0;
+
+  // Archive: everything that's been paid, bagged, and picked up
+  const doneRevenue = done.reduce((s, o) => s + o.total, 0);
+  const doneItems = itemTotals(done);
+  const doneCount = Object.values(doneItems).reduce((s, v) => s + v.qty, 0);
+  $("archive-totals").innerHTML =
+    `<div class="total-card total-archive"><span>${done.length}</span><small>completed orders</small><em>paid, bagged &amp; picked up</em></div>` +
+    `<div class="total-card total-archive"><span>${money(doneRevenue)}</span><small>completed revenue</small><em>all time</em></div>` +
+    `<div class="total-card total-archive"><span>${doneCount}</span><small>items sold</small><em>all time</em></div>`;
+  $("archive-items").innerHTML = Object.entries(doneItems).map(([name, v]) =>
+    `<div class="total-card"><span>${v.qty}</span><small>${esc(name)}</small><em>${money(v.revenue)} all time</em></div>`).join("");
+  $("archive-count").textContent = done.length;
+  $("archive-rows").innerHTML = done.filter(match).map(rowHtml).join("") ||
+    `<tr><td colspan="8" class="portal-empty">No completed orders yet.</td></tr>`;
 }
 
 $("login-form").addEventListener("submit", (e) => { e.preventDefault(); pw = $("pw").value; load(); });
@@ -179,7 +232,7 @@ $("logout").addEventListener("click", (e) => {
   location.reload();
 });
 
-$("rows").addEventListener("change", async (e) => {
+$("dash").addEventListener("change", async (e) => {
   const { id, flag } = e.target.dataset;
   if (!id || !flag) return;
   const o = data.orders.find((o) => o.id === id);
@@ -193,7 +246,7 @@ $("rows").addEventListener("change", async (e) => {
 let cancelId = null;
 const closeCancel = () => { $("cancel-modal").hidden = true; cancelId = null; };
 
-$("rows").addEventListener("click", async (e) => {
+$("dash").addEventListener("click", async (e) => {
   const { cancel, undo } = e.target.dataset;
   if (cancel) {
     const o = data.orders.find((o) => o.id === cancel);
@@ -228,11 +281,11 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("canc
 $("csv").addEventListener("click", () => {
   const names = Object.keys(data.totals);
   const cell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const head = ["Order #", "Ordered", "Name", "Phone", "Email", ...names, "Total", "Paid", "Bagged & ready", "Picked up", "Cancelled", "Notes"];
+  const head = ["Order #", "Ordered", "Name", "Phone", "Email", ...names, "Total", "Paid", "Bagged & ready", "Picked up", "Cancelled", "Archived", "Notes"];
   const lines = data.orders.map((o) => {
     const q = Object.fromEntries(o.items.map((it) => [it.name, it.qty]));
     return [o.id, new Date(o.createdAt).toLocaleString("en-US"), o.name, o.phone, o.email,
-      ...names.map((n) => q[n] || 0), o.total, o.paid ? "yes" : "no", o.ready ? "yes" : "no", o.pickedUp ? "yes" : "no", o.cancelled ? "yes" : "no", o.notes].map(cell).join(",");
+      ...names.map((n) => q[n] || 0), o.total, o.paid ? "yes" : "no", o.ready ? "yes" : "no", o.pickedUp ? "yes" : "no", o.cancelled ? "yes" : "no", isDone(o) ? "yes" : "no", o.notes].map(cell).join(",");
   });
   const blob = new Blob([[head.map(cell).join(","), ...lines].join("\n")], { type: "text/csv" });
   const a = document.createElement("a");
