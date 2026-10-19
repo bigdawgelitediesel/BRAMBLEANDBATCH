@@ -12,7 +12,7 @@ Website for Bramble & Batch, Abby's small-batch pop-up bakery in Fort Collins, C
 | Page | What it does |
 |---|---|
 | `index.html` | Homey main page: hero with logo, "Our Story" (signed Love, Abby), The Bakes (no prices), values, pre-order button |
-| `preorder.html` | Shows **Closed / Pre-orders open 11/09/2026** with a countdown and an **early access code** box (code = Vercel env `EARLY_ACCESS_CODE`, currently FIRSTBATCH, not case sensitive). Opens by itself on that date and shows the order form. Early orders are tagged "Early access" in the portal |
+| `preorder.html` | Shows **Closed / Pre-orders open 11/09/2026** with a countdown and an **early access code** box (code = Vercel env `EARLY_ACCESS_CODE`, currently SECRETBATCH26, not case sensitive). Opens by itself on that date and shows the order form. Early orders are tagged "Early access" in the portal |
 | `portal.html` | Password-protected. Every order (who ordered what, contact, notes) with Paid / Bagged & ready / Picked up checkboxes, a Cancel order button (Are you sure? pop-up, cancelled orders stay listed but drop out of totals, Undo available), still-to-collect total, running totals per item (still to bag), filters, delete, CSV download |
 
 ## Changing things
