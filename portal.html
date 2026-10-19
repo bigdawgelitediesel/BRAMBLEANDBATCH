@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Order Portal | Bramble &amp; Batch</title>
+<meta name="theme-color" content="#f5f0ec">
+<link rel="icon" href="img/monogram.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="nav">
+  <a href="index.html" class="nav-brand"><img src="img/monogram.png" alt="" width="40" height="40">Bramble <span>&amp;</span> Batch</a>
+  <nav><a id="logout" href="#" class="nav-cta" hidden>Log out</a></nav>
+</header>
+
+<main class="portal">
+
+  <section id="login" class="portal-login">
+    <img src="img/monogram.png" alt="" width="110" height="110">
+    <h1>Order Portal</h1>
+    <form id="login-form">
+      <label>Password<input id="pw" type="password" autocomplete="current-password" required></label>
+      <p id="login-error" class="po-error" hidden></p>
+      <button class="btn" type="submit">Open portal</button>
+    </form>
+  </section>
+
+  <section id="dash" hidden>
+    <div class="portal-head">
+      <div>
+        <p class="eyebrow">Pre-orders</p>
+        <h1>All Orders</h1>
+        <p id="po-state" class="portal-state"></p>
+      </div>
+      <div class="portal-actions">
+        <button id="refresh" class="btn btn-ghost" type="button">Refresh</button>
+        <button id="csv" class="btn btn-ghost" type="button">Download CSV</button>
+      </div>
+    </div>
+
+    <h2 class="portal-h2">Running totals &amp; revenue</h2>
+    <div id="totals" class="totals"></div>
+
+    <div class="portal-tools">
+      <h2 class="portal-h2">Who ordered what</h2>
+      <input id="search" type="search" placeholder="Search name, phone, email">
+      <label class="portal-check"><input id="hide-picked" type="checkbox"> Hide picked up</label>
+    </div>
+    <div class="table-wrap">
+      <table class="orders">
+        <thead><tr><th>Picked up</th><th>Name</th><th>Contact</th><th>Items</th><th>Total</th><th>Notes</th><th>Ordered</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p id="empty" class="portal-empty" hidden>No orders yet.</p>
+  </section>
+
+</main>
+
+<script src="config.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const money = (n) => "$" + Number(n).toFixed(Number(n) % 1 ? 2 : 0);
+const esc = (s) => String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const STATE_TEXT = { open: "Pre-orders are OPEN right now.", upcoming: "Pre-orders are closed until they open.", closed: "Pre-orders are closed." };
+let pw = "";
+let data = { orders: [], totals: {} };
+
+try { pw = sessionStorage.getItem("bb-pw") || ""; } catch (e) {}
+
+async function api(method, body, query = "") {
+  const r = await fetch("/api/orders" + query, {
+    method,
+    headers: { "x-admin-password": pw, ...(body ? { "Content-Type": "application/json" } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(j.error || "Error"), { status: r.status });
+  return j;
+}
+
+async function load() {
+  try {
+    data = await api("GET");
+    try { sessionStorage.setItem("bb-pw", pw); } catch (e) {}
+    $("login").hidden = true;
+    $("dash").hidden = false;
+    $("logout").hidden = false;
+    render();
+  } catch (e) {
+    if (e.status === 401) {
+      pw = "";
+      try { sessionStorage.removeItem("bb-pw"); } catch (x) {}
+      $("login").hidden = false;
+      $("dash").hidden = true;
+      $("login-error").textContent = "Wrong password.";
+      $("login-error").hidden = !$("pw").value;
+    } else alert(e.message);
+  }
+}
+
+function render() {
+  const orders = data.orders;
+  const t = data.totals;
+  const revenue = orders.reduce((s, o) => s + o.total, 0);
+  const picked = orders.filter((o) => o.pickedUp).length;
+  const collected = orders.filter((o) => o.pickedUp).reduce((s, o) => s + o.total, 0);
+  $("po-state").textContent = STATE_TEXT[data.state] || "";
+
+  $("totals").innerHTML =
+    `<div class="total-card total-main"><span>${orders.length}</span><small>orders</small><em>${picked} picked up</em></div>` +
+    `<div class="total-card total-main"><span>${money(revenue)}</span><small>total revenue</small><em>all pre-orders</em></div>` +
+    `<div class="total-card total-main"><span>${money(collected)}</span><small>collected</small><em>${money(revenue - collected)} still to collect</em></div>` +
+    Object.entries(t).map(([name, v]) =>
+      `<div class="total-card"><span>${v.qty}</span><small>${esc(name)}</small><em>${money(v.revenue)} revenue &middot; ${v.pickedUp} picked up</em></div>`).join("");
+
+  const q = $("search").value.trim().toLowerCase();
+  const hide = $("hide-picked").checked;
+  const shown = orders.filter((o) =>
+    (!hide || !o.pickedUp) &&
+    (!q || [o.name, o.phone, o.email, o.id].join(" ").toLowerCase().includes(q)));
+
+  $("rows").innerHTML = shown.map((o) => `
+    <tr class="${o.pickedUp ? "is-picked" : ""}">
+      <td><input type="checkbox" data-pick="${o.id}" ${o.pickedUp ? "checked" : ""} aria-label="Picked up"></td>
+      <td><strong>${esc(o.name)}</strong><br><small>#${esc(o.id)}</small></td>
+      <td>${o.phone ? `<a href="tel:${esc(o.phone)}">${esc(o.phone)}</a><br>` : ""}${o.email ? `<a href="mailto:${esc(o.email)}">${esc(o.email)}</a>` : ""}</td>
+      <td>${o.items.map((it) => `${it.qty} &times; ${esc(it.name)}`).join("<br>")}</td>
+      <td>${money(o.total)}</td>
+      <td class="notes">${esc(o.notes)}</td>
+      <td><small>${new Date(o.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</small></td>
+      <td><button class="del" data-del="${o.id}" title="Delete order" aria-label="Delete order">&times;</button></td>
+    </tr>`).join("");
+  $("empty").hidden = orders.length > 0;
+}
+
+$("login-form").addEventListener("submit", (e) => { e.preventDefault(); pw = $("pw").value; load(); });
+$("refresh").addEventListener("click", load);
+$("search").addEventListener("input", render);
+$("hide-picked").addEventListener("change", render);
+$("logout").addEventListener("click", (e) => {
+  e.preventDefault();
+  try { sessionStorage.removeItem("bb-pw"); } catch (x) {}
+  location.reload();
+});
+
+$("rows").addEventListener("change", async (e) => {
+  const id = e.target.dataset.pick;
+  if (!id) return;
+  const o = data.orders.find((o) => o.id === id);
+  try { await api("PATCH", { id, pickedUp: e.target.checked }); o.pickedUp = e.target.checked; }
+  catch (ex) { alert(ex.message); }
+  load();
+});
+
+$("rows").addEventListener("click", async (e) => {
+  const id = e.target.dataset.del;
+  if (!id) return;
+  const o = data.orders.find((o) => o.id === id);
+  if (!confirm(`Delete ${o.name}'s order? This can't be undone.`)) return;
+  try { await api("DELETE", null, "?id=" + encodeURIComponent(id)); } catch (ex) { alert(ex.message); }
+  load();
+});
+
+$("csv").addEventListener("click", () => {
+  const names = Object.keys(data.totals);
+  const cell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const head = ["Order #", "Ordered", "Name", "Phone", "Email", ...names, "Total", "Picked up", "Notes"];
+  const lines = data.orders.map((o) => {
+    const q = Object.fromEntries(o.items.map((it) => [it.name, it.qty]));
+    return [o.id, new Date(o.createdAt).toLocaleString("en-US"), o.name, o.phone, o.email,
+      ...names.map((n) => q[n] || 0), o.total, o.pickedUp ? "yes" : "no", o.notes].map(cell).join(",");
+  });
+  const blob = new Blob([[head.map(cell).join(","), ...lines].join("\n")], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `bramble-batch-preorders-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+});
+
+if (pw) load();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "brambleandbatch",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Bramble & Batch pop-up bakery site + pre-orders",
+  "dependencies": {
+    "@vercel/blob": "^2.0.0"
+  },
+  "engines": { "node": "22.x" }
+}

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pre-Order | Bramble &amp; Batch</title>
+<meta name="description" content="Pre-order sourdough and cookies from Bramble & Batch, a Fort Collins pop-up bakery.">
+<meta name="theme-color" content="#f5f0ec">
+<link rel="icon" href="img/monogram.png" type="image/png">
+<link rel="apple-touch-icon" href="img/monogram.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="nav">
+  <a href="index.html" class="nav-brand"><img src="img/monogram.png" alt="" width="40" height="40">Bramble <span>&amp;</span> Batch</a>
+  <nav>
+    <a href="index.html#next">Next Pop-Up</a>
+    <a href="index.html#menu">Menu</a>
+    <a href="index.html#about">About</a>
+    <a href="index.html#faq">FAQ</a>
+    <a href="preorder.html" class="nav-cta" aria-current="page">Pre-Order</a>
+  </nav>
+</header>
+
+<main class="preorder">
+  <img class="preorder-mark" src="img/monogram.png" alt="Bramble & Batch monogram" width="160" height="160">
+  <p class="eyebrow">Pre-orders</p>
+  <span id="po-status" class="status status-closed">Closed</span>
+  <h1 id="po-headline">Pre-orders open 11/09/2026</h1>
+  <p id="po-message" class="preorder-msg"></p>
+  <div id="po-countdown" class="countdown countdown-light" hidden>
+    <div><span id="po-d">0</span><small>days</small></div>
+    <div><span id="po-h">0</span><small>hrs</small></div>
+    <div><span id="po-m">0</span><small>min</small></div>
+  </div>
+
+  <form id="po-form" class="po-form" hidden novalidate>
+    <p id="po-pickup" class="po-pickup"></p>
+    <div id="po-items" class="po-items"></div>
+    <div class="po-total-row"><span>Total (pay at pickup)</span><strong id="po-total">$0</strong></div>
+    <label>Name<input name="name" autocomplete="name" required maxlength="80"></label>
+    <div class="po-two">
+      <label>Phone<input name="phone" type="tel" autocomplete="tel" maxlength="30"></label>
+      <label>Email<input name="email" type="email" autocomplete="email" maxlength="120"></label>
+    </div>
+    <label>Notes <span class="opt">(optional)</span><textarea name="notes" rows="3" maxlength="500" placeholder="Allergies, pickup questions, anything else"></textarea></label>
+    <input name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <p id="po-error" class="po-error" role="alert" hidden></p>
+    <button id="po-submit" class="btn" type="submit">Place pre-order</button>
+  </form>
+
+  <div id="po-done" class="po-done" hidden>
+    <h2>You're on the list!</h2>
+    <ul id="po-done-list"></ul>
+    <p>Total due at pickup: <strong id="po-done-total"></strong></p>
+    <p class="po-small">Order # <span id="po-done-id"></span>. Abby will reach out if anything changes.</p>
+  </div>
+
+  <div class="hero-actions">
+    <a id="ig-link-po" class="btn btn-ghost" target="_blank" rel="noopener">Follow for updates</a>
+    <a href="index.html" class="btn btn-ghost">Back to home</a>
+  </div>
+</main>
+
+<footer class="footer">
+  <img src="img/monogram.png" alt="" width="72" height="72">
+  <p class="footer-brand">Bramble &amp; Batch</p>
+  <p>Small-batch sourdough. Fort Collins, Colorado.</p>
+  <a id="ig-link-footer" target="_blank" rel="noopener">Instagram</a>
+  <p class="footer-fine">&copy; <span id="year"></span> Bramble &amp; Batch</p>
+</footer>
+
+<script src="config.js"></script>
+<script src="site.js"></script>
+</body>
+</html>
