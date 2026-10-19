@@ -25,7 +25,7 @@ const SITE = {
     forceClosed: false,                       // true = closed no matter what the dates say
     opensOn: "2026-11-09T00:00:00-07:00",     // shows "Pre-orders open 11/09/2026" until then
     closesOn: "",                             // e.g. "2026-11-12T20:00:00-07:00", blank = stays open
-    pickup: "Pick up at the next pop-up. Pay by Venmo or when you pick up.",
+    pickup: "Pick up at the next pop-up. Pre-orders are paid ahead by Venmo.",
     closedMessage: "Pre-orders are closed right now. Check back when the window opens, or follow on Instagram so you don't miss it.",
     openMessage: "Reserve your loaves and cookies before they're gone.",
   },

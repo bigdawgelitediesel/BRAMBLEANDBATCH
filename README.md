@@ -35,7 +35,7 @@ vercel deploy --prod --yes
 
 ## How orders are stored
 
-`api/orders.js` saves each order as its own JSON file in the private Vercel Blob store `brambleandbatch` (`orders/` folder). Customers pay at pickup; there is no online payment.
+`api/orders.js` saves each order as its own JSON file in the private Vercel Blob store `brambleandbatch` (`orders/` folder). Pre-orders are paid ahead by Venmo (@AbigailAnneF). The customer places the order, Venmos with the order # in the note, and Abby checks "Paid" in the portal. Unpaid orders are not made.
 
 ## Still to do
 

@@ -132,7 +132,7 @@ function buildOrderForm() {
   buildOrderForm.done = true;
   const items = SITE.menu.filter((m) => m.preorder !== false);
   $("po-pickup").textContent = SITE.preorder.pickup;
-  $("po-pay").innerHTML = `Pay by Venmo <strong>@${esc(SITE.payment.venmo)}</strong> (last 4 of phone: ${esc(SITE.payment.venmoLast4)}) or pay when you pick up. You'll get your order # after you submit.`;
+  $("po-pay").innerHTML = `<strong>Pre-orders are paid ahead.</strong> After you place your order, Venmo <strong>@${esc(SITE.payment.venmo)}</strong> (last 4 of phone: ${esc(SITE.payment.venmoLast4)}) with your order # in the note. Your order is made once it's paid.`;
   $("po-items").innerHTML = items.map((m, i) => `
     <div class="qty-row">
       <div><strong>${esc(m.name)}</strong><span>${money(m.price)} each</span></div>
