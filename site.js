@@ -148,7 +148,7 @@ function buildOrderForm() {
         <span><strong>${esc(f.name)}</strong><small>${esc(f.desc)}</small></span><em>FREE</em></label>`).join("");
     fb.hidden = false;
   }
-  $("po-pay").innerHTML = `<strong>Pre-orders are paid ahead.</strong> After you place your order, Venmo <strong>@${esc(SITE.payment.venmo)}</strong> (last 4 of phone: ${esc(SITE.payment.venmoLast4)}) with your order # in the note. Your order is made once it's paid.`;
+  $("po-pay").innerHTML = `<strong>Pre-orders are paid ahead.</strong> After you place your order, Venmo <strong>@${esc(SITE.payment.venmo)}</strong> (last 4 of phone: ${esc(SITE.payment.venmoLast4)}) with your order # in the note. Your order is confirmed once it's paid. You'll receive a confirmation text.`;
   $("po-items").innerHTML = items.map((m, i) => `
     <div class="qty-row">
       <div><strong>${esc(m.name)}</strong><span>${money(m.price)} each</span></div>
