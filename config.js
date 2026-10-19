@@ -16,7 +16,7 @@ const SITE = {
 
   // How people pay. Venmo asks for the last 4 of her phone the first time someone pays her.
   payment: {
-    venmo: "AbigailAnneF",
+    venmo: "abigailannef",
     venmoLast4: "6176",
   },
 
