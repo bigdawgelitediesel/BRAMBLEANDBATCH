@@ -257,7 +257,26 @@ function showPromo() {
   }, 300);
 }
 
+// "This pre-order only" banner for the free holiday treat (main page + pre-order page)
+function renderFreebiePromo() {
+  const box = $("freebie-promo");
+  const f = SITE.freebie;
+  if (!f || preorderState() === "closed") return; // hide once this round is over
+  const when = SITE.preorder.closesOn ? `Pre-orders ${opensText()} through ${dueText()}` : "";
+  box.innerHTML = `
+    <span class="freebie-badge">This pre-order only</span>
+    <h2>A free holiday treat with every pre-order</h2>
+    <p class="freebie-sub">Pick one, on us. Once this pre-order closes, it's gone.</p>
+    <div class="freebie-choices">${f.options.map((o) => `
+      <div class="freebie-choice"><strong>${esc(o.name)}</strong><span>${esc(o.desc)}</span><em>FREE</em></div>`).join('<div class="freebie-or">or</div>')}
+    </div>
+    ${when ? `<p class="freebie-when">${when}</p>` : ""}
+    ${$("po-status") ? "" : '<a href="preorder.html" class="btn">Pre-order now</a>'}`;
+  box.hidden = false;
+}
+
 // Each page only has some of these sections
+if ($("freebie-promo")) renderFreebiePromo();
 if ($("promo")) showPromo();
 if ($("popup-date")) renderPopup();
 if ($("menu-grid")) renderMenu();

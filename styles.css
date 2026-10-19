@@ -480,3 +480,35 @@ body.no-scroll { overflow: hidden; }
 .free-tag { display: inline-block; margin-top: 0.3rem; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; color: #3f5732; background: #e3e8d8; padding: 0.15rem 0.55rem; border-radius: 999px; white-space: nowrap; }
 .total-free { background: #f1f5ea; border-color: #c9d4b8; }
 .total-free span { color: var(--leaf); }
+
+/* "This pre-order only" free treat banner */
+.freebie-wrap { padding: 0 16px; }
+.freebie-promo {
+  max-width: 820px; margin: 0 auto 1rem; text-align: center;
+  background: #fffaf0; border: 2px solid var(--gold); border-radius: 28px;
+  padding: clamp(1.6rem, 5vw, 2.6rem) clamp(1.2rem, 4vw, 2.4rem);
+  box-shadow: 0 18px 40px -28px rgba(168, 125, 74, 0.7);
+}
+.freebie-promo-tight { margin: 0.4rem auto 2rem; }
+.freebie-badge {
+  display: inline-block; background: var(--raspberry); color: var(--paper);
+  font-size: 0.75rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase;
+  padding: 0.4rem 0.9rem; border-radius: 999px;
+}
+.freebie-promo h2 { font-size: clamp(1.7rem, 4.5vw, 2.4rem); font-weight: 600; margin: 0.8rem 0 0.4rem; }
+.freebie-sub { color: var(--muted); margin: 0 0 1.3rem; }
+.freebie-choices { display: flex; align-items: stretch; justify-content: center; gap: 0.8rem; }
+.freebie-choice {
+  flex: 1; max-width: 300px; background: #fff; border: 1px solid var(--line); border-radius: 18px;
+  padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.25rem;
+}
+.freebie-choice strong { font-family: var(--display); font-size: 1.25rem; font-weight: 600; }
+.freebie-choice span { color: var(--muted); font-size: 0.92rem; }
+.freebie-choice em { font-style: normal; font-weight: 800; font-size: 0.75rem; letter-spacing: 0.12em; color: var(--leaf); margin-top: 0.2rem; }
+.freebie-or { align-self: center; font-family: var(--display); font-style: italic; color: var(--gold); font-size: 1.2rem; }
+.freebie-when { font-weight: 700; margin: 1.2rem 0 0; }
+.freebie-promo .btn { margin-top: 1.2rem; }
+@media (max-width: 560px) {
+  .freebie-choices { flex-direction: column; align-items: center; }
+  .freebie-choice { width: 100%; }
+}
