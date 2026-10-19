@@ -368,3 +368,32 @@ details p { color: var(--muted); margin: 0.7rem 0 0.2rem; }
   .values { grid-template-columns: 1fr; }
 }
 .footer a.owner-link { font-weight: 400; color: inherit; }
+
+/* Home pre-order pop-up */
+.promo {
+  position: fixed; inset: 0; z-index: 50;
+  display: grid; place-items: center; padding: 16px;
+  background: rgba(29, 26, 25, 0.55);
+  animation: promo-fade 0.3s ease;
+}
+.promo[hidden] { display: none !important; }
+.promo-card {
+  position: relative; width: min(440px, 100%);
+  background: var(--cream); border-radius: 28px; text-align: center;
+  padding: 2.4rem 1.8rem 1.6rem;
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.5);
+  animation: promo-pop 0.35s cubic-bezier(.2, .9, .3, 1.2);
+}
+.promo-card img { width: 110px; height: 110px; border-radius: 50%; margin: 0 auto 1rem; }
+.promo-card h2 { font-size: clamp(1.8rem, 6vw, 2.3rem); font-weight: 600; margin-bottom: 0.6rem; }
+.promo-card p:not(.eyebrow) { color: var(--muted); margin: 0 0 1.5rem; }
+.promo-card .btn { display: block; width: 100%; font-size: 1.1rem; }
+.promo-close {
+  position: absolute; top: 12px; right: 14px;
+  border: 0; background: none; font-size: 2rem; line-height: 1; color: var(--muted); cursor: pointer;
+}
+.promo-close:hover { color: var(--ink); }
+.promo-later { margin-top: 0.8rem; border: 0; background: none; font: inherit; color: var(--muted); text-decoration: underline; cursor: pointer; }
+body.no-scroll { overflow: hidden; }
+@keyframes promo-fade { from { opacity: 0; } }
+@keyframes promo-pop { from { opacity: 0; transform: translateY(16px) scale(0.96); } }

@@ -144,7 +144,37 @@ function buildOrderForm() {
   });
 }
 
+// Home page pre-order pop-up. Shows once per visit (not again after it's closed).
+function showPromo() {
+  const box = $("promo");
+  try { if (sessionStorage.getItem("bb-promo-seen")) return; } catch (e) {}
+  const state = preorderState();
+  if (state === "open") {
+    $("promo-eyebrow").textContent = "Now open";
+    $("promo-title").textContent = "Pre-orders are open!";
+  } else if (state === "upcoming") {
+    const d = new Date(SITE.preorder.opensOn).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric", timeZone: "America/Denver" });
+    $("promo-eyebrow").textContent = "Coming soon";
+    $("promo-title").textContent = `Pre-orders open ${d}`;
+  }
+  const close = () => {
+    box.hidden = true;
+    document.body.classList.remove("no-scroll");
+    try { sessionStorage.setItem("bb-promo-seen", "1"); } catch (e) {}
+  };
+  $("promo-close").addEventListener("click", close);
+  $("promo-later").addEventListener("click", close);
+  box.addEventListener("click", (e) => { if (e.target === box) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !box.hidden) close(); });
+  setTimeout(() => {
+    box.hidden = false;
+    document.body.classList.add("no-scroll");
+    box.querySelector(".btn").focus();
+  }, 300);
+}
+
 // Each page only has some of these sections
+if ($("promo")) showPromo();
 if ($("popup-date")) renderPopup();
 if ($("menu-grid")) renderMenu();
 if ($("po-status")) renderPreorder();
