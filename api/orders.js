@@ -111,19 +111,28 @@ module.exports = async (req, res) => {
       }
       if (!items.length) return send(res, 400, { error: "Pick at least one item." });
 
+      let freebie = "";
+      if (SITE.freebie) {
+        freebie = clean(b.freebie, 60);
+        if (!SITE.freebie.options.some((f) => f.name === freebie)) {
+          return send(res, 400, { error: "Please pick your free " + SITE.freebie.options.map((f) => f.name.toLowerCase()).join(" or ") + "." });
+        }
+      }
+
       const createdAt = new Date().toISOString();
       const id = Math.random().toString(36).slice(2, 8).toUpperCase();
       const order = {
         id, createdAt, name, phone, email, notes, items,
         total: items.reduce((s, it) => s + it.qty * it.price, 0),
         earlyAccess: !isOpen,
+        freebie,
         paid: false,
         ready: false,
         pickedUp: false,
         path: `${PREFIX}${createdAt.replace(/[:.]/g, "-")}-${id}.json`,
       };
       await writeOrder(order);
-      return send(res, 200, { ok: true, id, total: order.total, items });
+      return send(res, 200, { ok: true, id, total: order.total, items, freebie });
     }
 
     if (!isAdmin(req)) return send(res, 401, { error: "Wrong password." });

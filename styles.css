@@ -450,7 +450,7 @@ body.no-scroll { overflow: hidden; }
 
 /* Portal: money/orders row, then one row of bakery items */
 .totals-main { grid-template-columns: repeat(3, 1fr); }
-.totals-items { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); margin-top: 0.8rem; }
+.totals-items { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: 0.8rem; }
 @media (max-width: 700px) { .totals-main { grid-template-columns: 1fr; } }
 
 /* Portal archive */
@@ -464,3 +464,19 @@ body.no-scroll { overflow: hidden; }
 .archive-list > summary { font-weight: 700; color: var(--ink); padding: 0.9rem 1.2rem; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; }
 .archive-list[open] > summary { margin-bottom: 0.4rem; }
 .po-window { font-size: 1.05rem; margin: -0.2rem 0 0.8rem; color: var(--ink); }
+
+/* Free holiday treat */
+.po-freebie { border: 1.5px solid var(--gold); border-radius: 18px; padding: 1rem 1.1rem 0.6rem; margin: 0 0 1.4rem; background: #fffaf0; }
+.po-freebie legend { font-family: var(--display); font-weight: 600; font-size: 1.15rem; padding: 0 0.4rem; }
+.po-freebie .po-small { margin: 0 0 0.7rem; }
+.freebie-opt { display: flex !important; align-items: center; gap: 0.8rem; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 0.7rem 0.9rem; margin-bottom: 0.6rem !important; cursor: pointer; font-weight: 400 !important; }
+.freebie-opt:has(input:checked) { border-color: var(--leaf); background: #f1f5ea; }
+.po-form .freebie-opt input { display: inline-block; width: 18px; height: 18px; margin: 0; accent-color: var(--leaf); flex: none; }
+.freebie-opt span { flex: 1; }
+.freebie-opt strong { display: block; font-family: var(--display); font-weight: 600; }
+.freebie-opt small { color: var(--muted); }
+.freebie-opt em { font-style: normal; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; color: var(--leaf); }
+.free-line { color: var(--leaf); }
+.free-tag { display: inline-block; margin-top: 0.3rem; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; color: #3f5732; background: #e3e8d8; padding: 0.15rem 0.55rem; border-radius: 999px; white-space: nowrap; }
+.total-free { background: #f1f5ea; border-color: #c9d4b8; }
+.total-free span { color: var(--leaf); }

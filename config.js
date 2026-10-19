@@ -31,6 +31,16 @@ const SITE = {
     closedAfterMessage: "This round of pre-orders is closed. Thank you! Follow on Instagram to hear about the next one.",
   },
 
+  // Free gift with every pre-order (customer must pick one). Set to null to turn it off.
+  freebie: {
+    title: "Pick your free holiday treat",
+    note: "Every pre-order comes with one, on us.",
+    options: [
+      { name: "Holiday Jam", desc: "Berries, cranberries, and orange zest." },
+      { name: "Honey Butter", desc: "Whipped butter and honey, made for warm bread." },
+    ],
+  },
+
   // Prices confirmed by Jacob 2026-10-19.
   // tag options: "new", "favorite", "limited". img is optional (put photos in /img)
   // preorder: false hides an item from the order form. max = most one person can order.

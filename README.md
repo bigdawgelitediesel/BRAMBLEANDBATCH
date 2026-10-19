@@ -46,3 +46,7 @@ vercel deploy --prod --yes
 - [ ] Abby reads and adjusts the "Our Story" text (drafted in her voice)
 - [ ] Pickup date and place for pre-orders
 - [ ] Consider a longer portal password before real customer info comes in
+
+## Free holiday treat (this pre-order)
+
+Every pre-order must pick one free gift: **Holiday Jam** (berries, cranberries, orange zest) or **Honey Butter**. Set in `config.js` → `freebie` (set it to `null` to turn it off for future pre-orders). The portal shows each order's pick as a green "FREE ..." tag, plus green count cards for how many jams / honey butters to bag; the CSV has a "Free gift" column.

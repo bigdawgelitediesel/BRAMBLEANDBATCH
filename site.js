@@ -139,6 +139,15 @@ function buildOrderForm() {
   buildOrderForm.done = true;
   const items = SITE.menu.filter((m) => m.preorder !== false);
   $("po-pickup").textContent = SITE.preorder.pickup;
+  if (SITE.freebie) {
+    const fb = $("po-freebie");
+    fb.innerHTML = `<legend>${esc(SITE.freebie.title)} <span class="req">*</span></legend>
+      <p class="po-small">${esc(SITE.freebie.note)}</p>` +
+      SITE.freebie.options.map((f) => `
+      <label class="freebie-opt"><input type="radio" name="freebie" value="${esc(f.name)}">
+        <span><strong>${esc(f.name)}</strong><small>${esc(f.desc)}</small></span><em>FREE</em></label>`).join("");
+    fb.hidden = false;
+  }
   $("po-pay").innerHTML = `<strong>Pre-orders are paid ahead.</strong> After you place your order, Venmo <strong>@${esc(SITE.payment.venmo)}</strong> (last 4 of phone: ${esc(SITE.payment.venmoLast4)}) with your order # in the note. Your order is made once it's paid.`;
   $("po-items").innerHTML = items.map((m, i) => `
     <div class="qty-row">
@@ -175,12 +184,15 @@ function buildOrderForm() {
       notes: form.notes.value, website: form.website.value, earlyCode, items: {},
     };
     items.forEach((m, i) => (body.items[m.name] = qty(i)));
+    const pick = form.querySelector('input[name="freebie"]:checked');
+    body.freebie = pick ? pick.value : "";
     // Name, phone, and email are all required
     const problem =
       !body.name.trim() ? ["name", "Please add your name."] :
       body.phone.replace(/\D/g, "").length < 10 ? ["phone", "Please add your phone number (10 digits)."] :
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email.trim()) ? ["email", "Please add a valid email address."] :
-      !Object.values(body.items).some((q) => q > 0) ? [null, "Pick at least one item."] : null;
+      !Object.values(body.items).some((q) => q > 0) ? [null, "Pick at least one item."] :
+      SITE.freebie && !body.freebie ? [null, "Please pick your free " + SITE.freebie.options.map((f) => f.name.toLowerCase()).join(" or ") + "."] : null;
     if (problem) {
       err.textContent = problem[1];
       err.hidden = false;
@@ -195,7 +207,8 @@ function buildOrderForm() {
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || "Something went wrong.");
       form.hidden = true;
-      $("po-done-list").innerHTML = (data.items || []).map((it) => `<li>${it.qty} &times; ${esc(it.name)}</li>`).join("");
+      $("po-done-list").innerHTML = (data.items || []).map((it) => `<li>${it.qty} &times; ${esc(it.name)}</li>`).join("") +
+        (data.freebie ? `<li class="free-line">+ FREE ${esc(data.freebie)}</li>` : "");
       $("po-done-total").textContent = money(data.total || 0);
       $("po-done-id").textContent = data.id || "";
       const pay = SITE.payment;
@@ -222,11 +235,11 @@ function showPromo() {
   if (state === "open") {
     $("promo-eyebrow").textContent = "Now open";
     $("promo-title").textContent = "Pre-orders are open!";
-    if (SITE.preorder.closesOn) $("promo-text").textContent = `Get your order in by ${dueText()}. Sourdough loaves, dinner rolls, and brown butter cookies, baked fresh for you.`;
+    if (SITE.preorder.closesOn) $("promo-text").textContent = `Get your order in by ${dueText()}. Every pre-order comes with a FREE holiday jam or honey butter!`;
   } else if (state === "upcoming") {
     $("promo-eyebrow").textContent = "Coming soon";
     $("promo-title").textContent = `Pre-orders open ${opensText()}`;
-    if (SITE.preorder.closesOn) $("promo-text").textContent = `Order window runs ${opensText()} through ${dueText()}. Want first dibs? Pre-order your sourdough loaves, dinner rolls, and brown butter cookies before they sell out.`;
+    if (SITE.preorder.closesOn) $("promo-text").textContent = `Order window runs ${opensText()} through ${dueText()}. Every pre-order comes with a FREE holiday jam or honey butter!`;
   }
   const close = () => {
     box.hidden = true;

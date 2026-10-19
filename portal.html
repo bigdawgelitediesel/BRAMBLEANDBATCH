@@ -151,6 +151,16 @@ const FILTERS = {
 // An order is done (archived) once it's paid, bagged, and picked up
 const isDone = (o) => !o.cancelled && o.paid && o.ready && o.pickedUp;
 
+// Free gift counts (jam vs honey butter) for a list of orders
+function freebieCards(list, label) {
+  if (!SITE.freebie) return "";
+  return SITE.freebie.options.map((f) => {
+    const n = list.filter((o) => o.freebie === f.name).length;
+    const bagged = list.filter((o) => o.freebie === f.name && o.ready).length;
+    return `<div class="total-card total-free"><span>${n}</span><small>FREE ${esc(f.name)}</small><em>${label === "open" ? `${n - bagged} still to bag` : "given away, all time"}</em></div>`;
+  }).join("");
+}
+
 // Per-item totals for a list of orders, in menu order
 function itemTotals(list) {
   const t = {};
@@ -169,7 +179,7 @@ function rowHtml(o) {
     <tr class="${o.cancelled ? "is-cancelled" : isDone(o) ? "" : o.pickedUp ? "is-picked" : ""}">
       <td><strong>${esc(o.name)}</strong><br><small>#${esc(o.id)}</small>${o.earlyAccess ? `<br><span class="early-tag">Early access</span>` : ""}</td>
       <td>${o.phone ? `<a href="tel:${esc(o.phone)}">${esc(o.phone)}</a><br>` : ""}${o.email ? `<a href="mailto:${esc(o.email)}">${esc(o.email)}</a>` : ""}</td>
-      <td>${o.items.map((it) => `${it.qty} &times; ${esc(it.name)}`).join("<br>")}</td>
+      <td>${o.items.map((it) => `${it.qty} &times; ${esc(it.name)}`).join("<br>")}${o.freebie ? `<br><span class="free-tag">FREE ${esc(o.freebie)}</span>` : ""}</td>
       <td>${money(o.total)}</td>
       <td class="flags">${o.cancelled
         ? `<span class="cancel-tag">Cancelled</span><button class="undo-btn" type="button" data-undo="${o.id}">Undo</button>`
@@ -196,7 +206,7 @@ function render() {
     `<div class="total-card total-main"><span>${money(collected)}</span><small>collected</small><em>of ${money(revenue)} total revenue</em></div>` +
     `<div class="total-card total-main"><span>${orders.length}</span><small>orders</small><em>${count("ready")} bagged &middot; ${count("pickedUp")} picked up</em></div>`;
   $("item-totals").innerHTML = Object.entries(t).map(([name, v]) =>
-      `<div class="total-card"><span>${v.qty}</span><small>${esc(name)}</small><em>${v.qty - (v.ready || 0)} still to bag &middot; ${money(v.revenue)}</em></div>`).join("");
+      `<div class="total-card"><span>${v.qty}</span><small>${esc(name)}</small><em>${v.qty - (v.ready || 0)} still to bag &middot; ${money(v.revenue)}</em></div>`).join("") + freebieCards(orders, "open");
 
   const q = $("search").value.trim().toLowerCase();
   const keep = FILTERS[$("filter").value] || FILTERS.all;
@@ -216,7 +226,7 @@ function render() {
     `<div class="total-card total-archive"><span>${money(doneRevenue)}</span><small>completed revenue</small><em>all time</em></div>` +
     `<div class="total-card total-archive"><span>${doneCount}</span><small>items sold</small><em>all time</em></div>`;
   $("archive-items").innerHTML = Object.entries(doneItems).map(([name, v]) =>
-    `<div class="total-card"><span>${v.qty}</span><small>${esc(name)}</small><em>${money(v.revenue)} all time</em></div>`).join("");
+    `<div class="total-card"><span>${v.qty}</span><small>${esc(name)}</small><em>${money(v.revenue)} all time</em></div>`).join("") + freebieCards(done, "done");
   $("archive-count").textContent = done.length;
   $("archive-rows").innerHTML = done.filter(match).map(rowHtml).join("") ||
     `<tr><td colspan="8" class="portal-empty">No completed orders yet.</td></tr>`;
@@ -252,7 +262,7 @@ $("dash").addEventListener("click", async (e) => {
     const o = data.orders.find((o) => o.id === cancel);
     cancelId = cancel;
     $("cancel-text").innerHTML = `Cancel <strong>${esc(o.name)}</strong>'s order (#${esc(o.id)})?<br>` +
-      o.items.map((it) => `${it.qty} &times; ${esc(it.name)}`).join(", ") + ` &middot; ${money(o.total)}`;
+      o.items.map((it) => `${it.qty} &times; ${esc(it.name)}`).join(", ") + (o.freebie ? `, free ${esc(o.freebie)}` : "") + ` &middot; ${money(o.total)}`;
     $("cancel-modal").hidden = false;
     $("cancel-no").focus();
   }
@@ -281,11 +291,11 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("canc
 $("csv").addEventListener("click", () => {
   const names = Object.keys(data.totals);
   const cell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const head = ["Order #", "Ordered", "Name", "Phone", "Email", ...names, "Total", "Paid", "Bagged & ready", "Picked up", "Cancelled", "Archived", "Notes"];
+  const head = ["Order #", "Ordered", "Name", "Phone", "Email", ...names, "Total", "Free gift", "Paid", "Bagged & ready", "Picked up", "Cancelled", "Archived", "Notes"];
   const lines = data.orders.map((o) => {
     const q = Object.fromEntries(o.items.map((it) => [it.name, it.qty]));
     return [o.id, new Date(o.createdAt).toLocaleString("en-US"), o.name, o.phone, o.email,
-      ...names.map((n) => q[n] || 0), o.total, o.paid ? "yes" : "no", o.ready ? "yes" : "no", o.pickedUp ? "yes" : "no", o.cancelled ? "yes" : "no", isDone(o) ? "yes" : "no", o.notes].map(cell).join(",");
+      ...names.map((n) => q[n] || 0), o.total, o.freebie || "", o.paid ? "yes" : "no", o.ready ? "yes" : "no", o.pickedUp ? "yes" : "no", o.cancelled ? "yes" : "no", isDone(o) ? "yes" : "no", o.notes].map(cell).join(",");
   });
   const blob = new Blob([[head.map(cell).join(","), ...lines].join("\n")], { type: "text/csv" });
   const a = document.createElement("a");
