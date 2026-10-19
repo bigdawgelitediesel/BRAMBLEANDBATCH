@@ -13,7 +13,7 @@ Website for Bramble & Batch, Abby's small-batch pop-up bakery in Fort Collins, C
 |---|---|
 | `index.html` | Homey main page: hero with logo, "Our Story" (signed Love, Abby), The Bakes (no prices), values, pre-order button |
 | `preorder.html` | Shows **Closed / Pre-orders open 11/09/2026** with a countdown. Opens by itself on that date and shows the order form |
-| `portal.html` | Password-protected. Every order (who ordered what, contact, notes), running totals per item, revenue / collected / still to collect, picked-up checkbox, delete, CSV download |
+| `portal.html` | Password-protected. Every order (who ordered what, contact, notes) with Paid / Bagged & ready / Picked up checkboxes, still-to-collect total, running totals per item (still to bag), filters, delete, CSV download |
 
 ## Changing things
 
