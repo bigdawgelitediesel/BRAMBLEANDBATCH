@@ -55,6 +55,7 @@
         <option value="unpaid">Not paid yet</option>
         <option value="unready">Not bagged yet</option>
         <option value="waiting">Not picked up yet</option>
+        <option value="cancelled">Cancelled</option>
       </select>
     </div>
     <div class="table-wrap">
@@ -67,6 +68,16 @@
   </section>
 
 </main>
+
+<div id="cancel-modal" class="promo" role="dialog" aria-modal="true" aria-labelledby="cancel-title" hidden>
+  <div class="promo-card">
+    <p class="eyebrow">Cancel order</p>
+    <h2 id="cancel-title">Are you sure?</h2>
+    <p id="cancel-text"></p>
+    <button id="cancel-yes" class="btn btn-danger" type="button">Yes, cancel it</button>
+    <button id="cancel-no" class="promo-later" type="button">No, keep the order</button>
+  </div>
+</div>
 
 <script src="config.js"></script>
 <script>
@@ -111,10 +122,16 @@ async function load() {
 }
 
 const FLAGS = [["paid", "Paid"], ["ready", "Bagged & ready"], ["pickedUp", "Picked up"]];
-const FILTERS = { all: () => true, unpaid: (o) => !o.paid, unready: (o) => !o.ready, waiting: (o) => !o.pickedUp };
+const FILTERS = {
+  all: () => true,
+  unpaid: (o) => !o.cancelled && !o.paid,
+  unready: (o) => !o.cancelled && !o.ready,
+  waiting: (o) => !o.cancelled && !o.pickedUp,
+  cancelled: (o) => o.cancelled,
+};
 
 function render() {
-  const orders = data.orders;
+  const orders = data.orders.filter((o) => !o.cancelled); // totals only count live orders
   const t = data.totals;
   const count = (f) => orders.filter((o) => o[f]).length;
   const revenue = orders.reduce((s, o) => s + o.total, 0);
@@ -130,22 +147,25 @@ function render() {
 
   const q = $("search").value.trim().toLowerCase();
   const keep = FILTERS[$("filter").value] || FILTERS.all;
-  const shown = orders.filter((o) => keep(o) &&
-    (!q || [o.name, o.phone, o.email, o.id].join(" ").toLowerCase().includes(q)));
+  const shown = data.orders.filter((o) => keep(o) &&
+    (!q || [o.name, o.phone, o.email, o.id].join(" ").toLowerCase().includes(q)))
+    .sort((a, b) => (a.cancelled ? 1 : 0) - (b.cancelled ? 1 : 0)); // cancelled at the bottom
 
   $("rows").innerHTML = shown.map((o) => `
-    <tr class="${o.pickedUp ? "is-picked" : ""}">
+    <tr class="${o.cancelled ? "is-cancelled" : o.pickedUp ? "is-picked" : ""}">
       <td><strong>${esc(o.name)}</strong><br><small>#${esc(o.id)}</small>${o.earlyAccess ? `<br><span class="early-tag">Early access</span>` : ""}</td>
       <td>${o.phone ? `<a href="tel:${esc(o.phone)}">${esc(o.phone)}</a><br>` : ""}${o.email ? `<a href="mailto:${esc(o.email)}">${esc(o.email)}</a>` : ""}</td>
       <td>${o.items.map((it) => `${it.qty} &times; ${esc(it.name)}`).join("<br>")}</td>
       <td>${money(o.total)}</td>
-      <td class="flags">${FLAGS.map(([f, label]) => `
+      <td class="flags">${o.cancelled
+        ? `<span class="cancel-tag">Cancelled</span><button class="undo-btn" type="button" data-undo="${o.id}">Undo</button>`
+        : FLAGS.map(([f, label]) => `
         <label class="flag ${o[f] ? "on" : ""}"><input type="checkbox" data-id="${o.id}" data-flag="${f}" ${o[f] ? "checked" : ""}> ${label}</label>`).join("")}</td>
       <td class="notes">${esc(o.notes)}</td>
       <td><small>${new Date(o.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</small></td>
-      <td><button class="del" data-del="${o.id}" title="Delete order" aria-label="Delete order">&times;</button></td>
+      <td>${o.cancelled ? "" : `<button class="cancel-btn" type="button" data-cancel="${o.id}">Cancel order</button>`}</td>
     </tr>`).join("");
-  $("empty").hidden = orders.length > 0;
+  $("empty").hidden = data.orders.length > 0;
 }
 
 $("login-form").addEventListener("submit", (e) => { e.preventDefault(); pw = $("pw").value; load(); });
@@ -168,23 +188,50 @@ $("rows").addEventListener("change", async (e) => {
   load();
 });
 
+// Cancel order: button opens an "Are you sure?" pop-up; Yes marks it cancelled
+let cancelId = null;
+const closeCancel = () => { $("cancel-modal").hidden = true; cancelId = null; };
+
 $("rows").addEventListener("click", async (e) => {
-  const id = e.target.dataset.del;
+  const { cancel, undo } = e.target.dataset;
+  if (cancel) {
+    const o = data.orders.find((o) => o.id === cancel);
+    cancelId = cancel;
+    $("cancel-text").innerHTML = `Cancel <strong>${esc(o.name)}</strong>'s order (#${esc(o.id)})?<br>` +
+      o.items.map((it) => `${it.qty} &times; ${esc(it.name)}`).join(", ") + ` &middot; ${money(o.total)}`;
+    $("cancel-modal").hidden = false;
+    $("cancel-no").focus();
+  }
+  if (undo) {
+    e.target.disabled = true;
+    try { await api("PATCH", { id: undo, field: "cancelled", value: false }); } catch (ex) { alert(ex.message); }
+    load();
+  }
+});
+
+$("cancel-yes").addEventListener("click", async () => {
+  const id = cancelId;
   if (!id) return;
-  const o = data.orders.find((o) => o.id === id);
-  if (!confirm(`Delete ${o.name}'s order? This can't be undone.`)) return;
-  try { await api("DELETE", null, "?id=" + encodeURIComponent(id)); } catch (ex) { alert(ex.message); }
+  $("cancel-yes").disabled = true;
+  $("cancel-yes").textContent = "Cancelling...";
+  try { await api("PATCH", { id, field: "cancelled", value: true }); } catch (ex) { alert(ex.message); }
+  $("cancel-yes").disabled = false;
+  $("cancel-yes").textContent = "Yes, cancel it";
+  closeCancel();
   load();
 });
+$("cancel-no").addEventListener("click", closeCancel);
+$("cancel-modal").addEventListener("click", (e) => { if (e.target === $("cancel-modal")) closeCancel(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("cancel-modal").hidden) closeCancel(); });
 
 $("csv").addEventListener("click", () => {
   const names = Object.keys(data.totals);
   const cell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const head = ["Order #", "Ordered", "Name", "Phone", "Email", ...names, "Total", "Paid", "Bagged & ready", "Picked up", "Notes"];
+  const head = ["Order #", "Ordered", "Name", "Phone", "Email", ...names, "Total", "Paid", "Bagged & ready", "Picked up", "Cancelled", "Notes"];
   const lines = data.orders.map((o) => {
     const q = Object.fromEntries(o.items.map((it) => [it.name, it.qty]));
     return [o.id, new Date(o.createdAt).toLocaleString("en-US"), o.name, o.phone, o.email,
-      ...names.map((n) => q[n] || 0), o.total, o.paid ? "yes" : "no", o.ready ? "yes" : "no", o.pickedUp ? "yes" : "no", o.notes].map(cell).join(",");
+      ...names.map((n) => q[n] || 0), o.total, o.paid ? "yes" : "no", o.ready ? "yes" : "no", o.pickedUp ? "yes" : "no", o.cancelled ? "yes" : "no", o.notes].map(cell).join(",");
   });
   const blob = new Blob([[head.map(cell).join(","), ...lines].join("\n")], { type: "text/csv" });
   const a = document.createElement("a");

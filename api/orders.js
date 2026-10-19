@@ -3,7 +3,7 @@
 //
 // POST   /api/orders                      -> customer places an order (only while pre-orders are open)
 // GET    /api/orders     [x-admin-password] -> all orders + running totals
-// PATCH  /api/orders     [x-admin-password] {id, field, value} -> set paid / ready (bagged) / pickedUp
+// PATCH  /api/orders     [x-admin-password] {id, field, value} -> set paid / ready (bagged) / pickedUp / cancelled
 // DELETE /api/orders?id= [x-admin-password] -> remove an order
 
 const { put, get, list, del } = require("@vercel/blob");
@@ -59,6 +59,7 @@ function totals(orders) {
   const blank = () => ({ qty: 0, revenue: 0, ready: 0, pickedUp: 0, collected: 0 });
   SITE.menu.forEach((m) => (t[m.name] = blank()));
   for (const o of orders) {
+    if (o.cancelled) continue; // cancelled orders don't count toward totals or revenue
     for (const it of o.items) {
       t[it.name] = t[it.name] || blank();
       t[it.name].qty += it.qty;
@@ -133,7 +134,7 @@ module.exports = async (req, res) => {
       const b = await readBody(req);
       const order = await findOrder(b.id);
       if (!order) return send(res, 404, { error: "Order not found." });
-      if (!["paid", "ready", "pickedUp"].includes(b.field)) return send(res, 400, { error: "Unknown field." });
+      if (!["paid", "ready", "pickedUp", "cancelled"].includes(b.field)) return send(res, 400, { error: "Unknown field." });
       order[b.field] = !!b.value;
       await writeOrder(order);
       return send(res, 200, { ok: true });
