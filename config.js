@@ -24,13 +24,15 @@ const SITE = {
     openMessage: "Reserve your loaves and cookies before they're gone.",
   },
 
-  // PRICES ARE PLACEHOLDERS until Abby confirms them.
+  // Prices confirmed by Jacob 2026-10-19.
   // tag options: "new", "favorite", "limited". img is optional (put photos in /img)
   // preorder: false hides an item from the order form. max = most one person can order.
   menu: [
-    { name: "Sourdough Loaf", desc: "Long, slow ferment. Blistered crust, open crumb, tangy and chewy.", price: 12, tag: "favorite", img: "img/loaves-scored.jpg", max: 4 },
-    { name: "Dinner Rolls (half dozen)", desc: "Soft, buttery, pull-apart rolls. Made for the holiday table.", price: 10, tag: "new", max: 4 },
-    { name: "Brown Butter Chocolate Chip Cookies", desc: "Brown butter dough, big chocolate chunks, crisp edges, soft middle, flaky sea salt.", price: 4, tag: "limited", img: "img/cookies.jpg", max: 24 },
+    { name: "Plain Sourdough", desc: "The classic. Long, slow ferment, blistered crust, open crumb, tangy and chewy.", price: 12, tag: "favorite", img: "img/loaves-scored.jpg", max: 4 },
+    { name: "Chocolate Chip Sourdough", desc: "Our sourdough loaded with chocolate chips. Breakfast, dessert, both.", price: 14, tag: "new", max: 4 },
+    { name: "Italian Herb & Cheese Sourdough", desc: "Sourdough baked with Italian herbs and cheese. Made for dipping, toasting, and sandwiches.", price: 14, tag: "new", max: 4 },
+    { name: "Dinner Rolls (dozen)", desc: "12 soft, buttery, pull-apart rolls. Made for the holiday table.", price: 12, tag: "", max: 4 },
+    { name: "Brown Butter Chocolate Chip Cookies (6)", desc: "Half a dozen. Brown butter dough, big chocolate chunks, crisp edges, soft middle, flaky sea salt.", price: 6, tag: "limited", img: "img/cookies.jpg", max: 4 },
   ],
 };
 // ============================================================
