@@ -50,10 +50,10 @@
     <div id="po-items" class="po-items"></div>
     <div class="po-total-row"><span>Total</span><strong id="po-total">$0</strong></div>
     <p id="po-pay" class="po-pay"></p>
-    <label>Name<input name="name" autocomplete="name" required maxlength="80"></label>
+    <label>Name <span class="req">*</span><input name="name" autocomplete="name" required maxlength="80"></label>
     <div class="po-two">
-      <label>Phone<input name="phone" type="tel" autocomplete="tel" maxlength="30"></label>
-      <label>Email<input name="email" type="email" autocomplete="email" maxlength="120"></label>
+      <label>Phone <span class="req">*</span><input name="phone" type="tel" autocomplete="tel" required maxlength="30"></label>
+      <label>Email <span class="req">*</span><input name="email" type="email" autocomplete="email" required maxlength="120"></label>
     </div>
     <label>Notes <span class="opt">(optional)</span><textarea name="notes" rows="3" maxlength="500" placeholder="Allergies, pickup questions, anything else"></textarea></label>
     <input name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">

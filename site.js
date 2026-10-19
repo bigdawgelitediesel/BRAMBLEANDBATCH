@@ -168,6 +168,18 @@ function buildOrderForm() {
       notes: form.notes.value, website: form.website.value, earlyCode, items: {},
     };
     items.forEach((m, i) => (body.items[m.name] = qty(i)));
+    // Name, phone, and email are all required
+    const problem =
+      !body.name.trim() ? ["name", "Please add your name."] :
+      body.phone.replace(/\D/g, "").length < 10 ? ["phone", "Please add your phone number (10 digits)."] :
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email.trim()) ? ["email", "Please add a valid email address."] :
+      !Object.values(body.items).some((q) => q > 0) ? [null, "Pick at least one item."] : null;
+    if (problem) {
+      err.textContent = problem[1];
+      err.hidden = false;
+      if (problem[0]) form[problem[0]].focus();
+      return;
+    }
     const btn = $("po-submit");
     btn.disabled = true;
     btn.textContent = "Sending...";

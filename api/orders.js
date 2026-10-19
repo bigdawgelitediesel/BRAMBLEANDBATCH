@@ -98,7 +98,8 @@ module.exports = async (req, res) => {
       const email = clean(b.email, 120);
       const notes = clean(b.notes, 500);
       if (!name) return send(res, 400, { error: "Please add your name." });
-      if (!phone && !email) return send(res, 400, { error: "Please add a phone number or email so Abby can reach you." });
+      if (phone.replace(/\D/g, "").length < 10) return send(res, 400, { error: "Please add your phone number (10 digits)." });
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return send(res, 400, { error: "Please add a valid email address." });
 
       const items = [];
       for (const m of SITE.menu.filter((m) => m.preorder !== false)) {
