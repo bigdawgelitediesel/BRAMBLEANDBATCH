@@ -59,6 +59,11 @@ function renderMenu() {
     </article>`).join("");
 }
 
+// Dates for the pre-order window, shown as MM/DD/YYYY in Mountain time
+const fmtDate = (d) => d.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric", timeZone: "America/Denver" });
+const opensText = () => fmtDate(new Date(SITE.preorder.opensOn));
+const dueText = () => fmtDate(new Date(new Date(SITE.preorder.closesOn) - 60000)); // closes at midnight, so last day is the day before
+
 function renderPreorder() {
   const p = SITE.preorder;
   const state = preorderState();
@@ -69,19 +74,21 @@ function renderPreorder() {
     status.className = "status status-open";
     $("po-headline").textContent = "Pre-orders are open";
     $("po-message").textContent = p.openMessage;
+    if (p.closesOn) $("po-window").innerHTML = `All pre-orders must be in by <strong>${dueText()}</strong>`;
     buildOrderForm();
     return;
   }
 
   $("po-message").textContent = p.closedMessage;
-  setupEarlyAccess();
   if (state === "upcoming") {
+    setupEarlyAccess();
     const opens = new Date(p.opensOn);
-    const mmddyyyy = opens.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric", timeZone: "America/Denver" });
-    $("po-headline").textContent = `Pre-orders open ${mmddyyyy}`;
+    $("po-headline").textContent = `Pre-orders open ${opensText()}`;
+    if (p.closesOn) $("po-window").innerHTML = `Order window: <strong>${opensText()}</strong> through <strong>${dueText()}</strong>`;
     countdown(opens, { box: "po-countdown", d: "po-d", h: "po-h", m: "po-m" }, () => location.reload());
   } else {
     $("po-headline").textContent = "Pre-orders are closed";
+    $("po-message").textContent = p.closedAfterMessage || p.closedMessage;
   }
 }
 
@@ -215,10 +222,11 @@ function showPromo() {
   if (state === "open") {
     $("promo-eyebrow").textContent = "Now open";
     $("promo-title").textContent = "Pre-orders are open!";
+    if (SITE.preorder.closesOn) $("promo-text").textContent = `Get your order in by ${dueText()}. Sourdough loaves, dinner rolls, and brown butter cookies, baked fresh for you.`;
   } else if (state === "upcoming") {
-    const d = new Date(SITE.preorder.opensOn).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric", timeZone: "America/Denver" });
     $("promo-eyebrow").textContent = "Coming soon";
-    $("promo-title").textContent = `Pre-orders open ${d}`;
+    $("promo-title").textContent = `Pre-orders open ${opensText()}`;
+    if (SITE.preorder.closesOn) $("promo-text").textContent = `Order window runs ${opensText()} through ${dueText()}. Want first dibs? Pre-order your sourdough loaves, dinner rolls, and brown butter cookies before they sell out.`;
   }
   const close = () => {
     box.hidden = true;

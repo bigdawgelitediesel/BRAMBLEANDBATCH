@@ -85,12 +85,14 @@ module.exports = async (req, res) => {
 
       // Early access: a code (env EARLY_ACCESS_CODE) lets people order before pre-orders open
       const code = process.env.EARLY_ACCESS_CODE;
-      const early = !!code && clean(b.earlyCode, 60).toLowerCase() === code.toLowerCase();
+      const state = preorderState();
+      // Early access only works before pre-orders open, never after the deadline
+      const early = state === "upcoming" && !!code && clean(b.earlyCode, 60).toLowerCase() === code.toLowerCase();
       if (b.action === "checkCode") {
         await new Promise((r) => setTimeout(r, 400)); // slow down guessing
         return send(res, early ? 200 : 403, early ? { ok: true } : { error: "That code didn't work." });
       }
-      const isOpen = preorderState() === "open";
+      const isOpen = state === "open";
       if (!isOpen && !early) return send(res, 403, { error: "Pre-orders are closed right now." });
 
       const name = clean(b.name, 80);

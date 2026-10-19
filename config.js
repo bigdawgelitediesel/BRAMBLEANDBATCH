@@ -23,11 +23,12 @@ const SITE = {
   // Pre-orders open and close on their own based on these dates (Mountain time).
   preorder: {
     forceClosed: false,                       // true = closed no matter what the dates say
-    opensOn: "2026-11-09T00:00:00-07:00",     // shows "Pre-orders open 11/09/2026" until then
-    closesOn: "",                             // e.g. "2026-11-12T20:00:00-07:00", blank = stays open
+    opensOn: "2026-11-02T00:00:00-07:00",     // opens 11/02/2026 at midnight
+    closesOn: "2026-11-18T00:00:00-07:00",    // all orders in by end of 11/17/2026 (closes at midnight)
     pickup: "Pick up at the next pop-up. Pre-orders are paid ahead by Venmo.",
     closedMessage: "Pre-orders are closed right now. Check back when the window opens, or follow on Instagram so you don't miss it.",
     openMessage: "Reserve your loaves and cookies before they're gone.",
+    closedAfterMessage: "This round of pre-orders is closed. Thank you! Follow on Instagram to hear about the next one.",
   },
 
   // Prices confirmed by Jacob 2026-10-19.
