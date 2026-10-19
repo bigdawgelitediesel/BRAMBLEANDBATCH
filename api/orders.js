@@ -109,7 +109,7 @@ module.exports = async (req, res) => {
         if (qty < 0 || qty > (m.max || 12)) return send(res, 400, { error: `Max ${m.max || 12} ${m.name} per order.` });
         if (qty > 0) items.push({ name: m.name, qty, price: Number(m.price) || 0 });
       }
-      if (!items.length) return send(res, 400, { error: "Pick at least one item." });
+      if (!items.length) return send(res, 400, { error: "Pick at least one bakery item. The free treat comes with an order, not on its own." });
 
       let freebie = "";
       if (SITE.freebie) {

@@ -191,7 +191,7 @@ function buildOrderForm() {
       !body.name.trim() ? ["name", "Please add your name."] :
       body.phone.replace(/\D/g, "").length < 10 ? ["phone", "Please add your phone number (10 digits)."] :
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email.trim()) ? ["email", "Please add a valid email address."] :
-      !Object.values(body.items).some((q) => q > 0) ? [null, "Pick at least one item."] :
+      !Object.values(body.items).some((q) => q > 0) ? [null, "Pick at least one bakery item. The free treat comes with an order, not on its own."] :
       SITE.freebie && !body.freebie ? [null, "Please pick your free " + SITE.freebie.options.map((f) => f.name.toLowerCase()).join(" or ") + "."] : null;
     if (problem) {
       err.textContent = problem[1];
