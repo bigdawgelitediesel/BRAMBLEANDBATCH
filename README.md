@@ -40,7 +40,7 @@ vercel deploy --prod --yes
 ## Still to do
 
 - [x] Real prices: Plain Sourdough $12, Chocolate Chip Sourdough $14, Italian Herb & Cheese Sourdough $14, Dinner Rolls dozen $12, Brown Butter Chocolate Chip Cookies 6 for $12
-- [ ] Confirm per-order limits (currently 4 of each item per order)
+- [x] Per-order limit: up to 10 of each item
 - [x] Abby's Instagram link (@thebrambleandbatch)
 - [ ] Photos for dinner rolls, chocolate chip sourdough, herb & cheese sourdough (show the B&B monogram for now)
 - [ ] Abby reads and adjusts the "Our Story" text (drafted in her voice)
