@@ -447,3 +447,8 @@ body.no-scroll { overflow: hidden; }
 .btn-venmo { background: #008cff; border-color: #008cff; color: #fff; }
 .btn-venmo:hover { background: #0074d4; border-color: #0074d4; }
 .req { color: var(--raspberry); }
+
+/* Portal: money/orders row, then one row of bakery items */
+.totals-main { grid-template-columns: repeat(3, 1fr); }
+.totals-items { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); margin-top: 0.8rem; }
+@media (max-width: 700px) { .totals-main { grid-template-columns: 1fr; } }
