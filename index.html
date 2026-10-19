@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bramble &amp; Batch | Pop-Up Bakery</title>
+<meta name="description" content="Bramble & Batch is a small-batch pop-up bakery, open about once a month. Find the next pop-up, the menu, and how to get there before it sells out.">
+<meta property="og:title" content="Bramble & Batch">
+<meta property="og:description" content="Small-batch bakes. One pop-up a month. Come early.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="nav">
+  <a href="#top" class="nav-brand">Bramble <span>&amp;</span> Batch</a>
+  <nav>
+    <a href="#next">Next Pop-Up</a>
+    <a href="#menu">Menu</a>
+    <a href="#about">About</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <svg class="hero-sprig" viewBox="0 0 120 120" aria-hidden="true">
+      <path d="M60 112 C58 80 62 50 60 18" stroke="var(--leaf)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M60 70 C40 64 30 50 32 38 C46 42 56 54 60 70Z" fill="var(--leaf)"/>
+      <path d="M60 54 C78 48 88 34 86 22 C72 26 62 38 60 54Z" fill="var(--leaf)"/>
+      <g fill="var(--berry)">
+        <circle cx="52" cy="14" r="5"/><circle cx="62" cy="12" r="5"/><circle cx="57" cy="21" r="5"/>
+        <circle cx="67" cy="20" r="5"/><circle cx="60" cy="29" r="5"/><circle cx="48" cy="23" r="4.5"/>
+      </g>
+    </svg>
+    <p class="eyebrow">Small-batch pop-up bakery</p>
+    <h1>Bramble <em>&amp;</em> Batch</h1>
+    <p class="lede">Baked from scratch in small batches. Open about once a month, until it's gone.</p>
+    <a href="#next" class="btn">See the next pop-up</a>
+  </section>
+
+  <section id="next" class="next">
+    <div class="next-card">
+      <p class="eyebrow">Next pop-up</p>
+      <h2 id="popup-date">Date coming soon</h2>
+      <p id="popup-time" class="next-time"></p>
+      <p id="popup-place" class="next-place"></p>
+      <div id="countdown" class="countdown" hidden>
+        <div><span id="cd-d">0</span><small>days</small></div>
+        <div><span id="cd-h">0</span><small>hrs</small></div>
+        <div><span id="cd-m">0</span><small>min</small></div>
+      </div>
+      <p id="popup-note" class="next-note"></p>
+      <div class="next-actions">
+        <a id="map-link" class="btn" target="_blank" rel="noopener" hidden>Get directions</a>
+        <a id="ig-link-next" class="btn btn-ghost" target="_blank" rel="noopener">Follow for updates</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="menu" class="menu">
+    <p class="eyebrow">This month's bake</p>
+    <h2>The Menu</h2>
+    <p class="section-sub">Changes every pop-up. Quantities are small, so the good stuff goes first.</p>
+    <div id="menu-grid" class="menu-grid"></div>
+  </section>
+
+  <section id="about" class="about">
+    <div class="about-text">
+      <p class="eyebrow">The baker</p>
+      <h2>Hi, I'm Abby.</h2>
+      <p>Bramble &amp; Batch started in my home kitchen with a stack of recipes and way too much butter. Once a month I bake a short menu in small batches, set up a table, and sell until the trays are empty.</p>
+      <p>Everything is made by hand, the week of. No shortcuts, no day-old leftovers. If you see it on the table, it was baked for you.</p>
+    </div>
+    <div class="about-steps">
+      <div class="step"><span>1</span><p><strong>Follow along.</strong> The date, place, and menu drop here and on Instagram first.</p></div>
+      <div class="step"><span>2</span><p><strong>Come early.</strong> Batches are small and favorites sell out fast.</p></div>
+      <div class="step"><span>3</span><p><strong>Grab a box.</strong> Bring a friend, or don't, and keep them all.</p></div>
+    </div>
+  </section>
+
+  <section id="faq" class="faq">
+    <p class="eyebrow">Good to know</p>
+    <h2>FAQ</h2>
+    <details><summary>How often do you pop up?</summary><p>About once a month. The next date is always posted at the top of this page.</p></details>
+    <details><summary>Can I pre-order?</summary><p>Not yet. For now it's first come, first served at the table. Follow on Instagram so you don't miss it.</p></details>
+    <details><summary>How do I pay?</summary><p>Cash and card are both welcome.</p></details>
+    <details><summary>Do you do custom orders?</summary><p>Ask! Send a message on Instagram and we'll see what fits the schedule.</p></details>
+    <details><summary>What about allergies?</summary><p>Everything is baked in a home kitchen that handles wheat, dairy, eggs, and nuts. Ask at the table about any specific item.</p></details>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p class="footer-brand">Bramble &amp; Batch</p>
+  <p>Small-batch bakes. One pop-up a month.</p>
+  <a id="ig-link-footer" target="_blank" rel="noopener">Instagram</a>
+  <p class="footer-fine">&copy; <span id="year"></span> Bramble &amp; Batch</p>
+</footer>
+
+<script src="site.js"></script>
+</body>
+</html>
