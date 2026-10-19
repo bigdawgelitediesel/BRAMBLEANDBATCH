@@ -215,7 +215,7 @@ function buildOrderForm() {
       $("po-done-venmo").textContent = "@" + pay.venmo;
       $("po-done-id2").textContent = data.id || "";
       $("po-done-last4").textContent = pay.venmoLast4;
-      $("po-venmo-link").href = `https://venmo.com/${pay.venmo}?txn=pay&amount=${data.total || 0}&note=${encodeURIComponent("Bramble & Batch order #" + (data.id || ""))}`;
+      $("po-venmo-link").href = `https://venmo.com/u/${pay.venmo}`;
       $("po-done").hidden = false;
       $("po-done").scrollIntoView({ behavior: "smooth", block: "center" });
     } catch (ex) {
