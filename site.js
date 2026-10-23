@@ -64,10 +64,25 @@ const fmtDate = (d) => d.toLocaleDateString("en-US", { month: "2-digit", day: "2
 const opensText = () => fmtDate(new Date(SITE.preorder.opensOn));
 const dueText = () => fmtDate(new Date(new Date(SITE.preorder.closesOn) - 60000)); // closes at midnight, so last day is the day before
 
+// Pickup days + address box on the pre-order page (shown whether orders are open or not)
+const slotByKey = (key) => (SITE.preorder.pickupSlots || []).find((s) => s.key === key);
+function renderPickupInfo() {
+  const p = SITE.preorder;
+  const box = $("po-pickup-info");
+  if (!box || !(p.pickupSlots || []).length || preorderState() === "closed") return;
+  box.innerHTML = `
+    <p class="po-pickup-title">${esc(p.title || "Pickup")}</p>
+    <p class="po-pickup-lead">Pick up on either day. You'll choose your time when you order.</p>
+    <ul class="po-pickup-days">${p.pickupSlots.map((s) => `<li><strong>${esc(s.day)} ${esc(s.date)}</strong><span>${esc(s.time)}</span></li>`).join("")}</ul>
+    ${p.pickupAddress ? `<p class="po-pickup-addr"><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.pickupAddress)}" target="_blank" rel="noopener">${esc(p.pickupAddress)}</a></p>` : ""}`;
+  box.hidden = false;
+}
+
 function renderPreorder() {
   const p = SITE.preorder;
   const state = preorderState();
   const status = $("po-status");
+  renderPickupInfo();
 
   if (state === "open") {
     status.textContent = "Open";
@@ -138,7 +153,18 @@ function buildOrderForm() {
   if (buildOrderForm.done) return;
   buildOrderForm.done = true;
   const items = SITE.menu.filter((m) => m.preorder !== false);
-  $("po-pickup").textContent = SITE.preorder.pickup;
+  $("po-pickup").innerHTML = esc(SITE.preorder.pickup) +
+    (SITE.preorder.pickupAddress ? `<br><strong>${esc(SITE.preorder.pickupAddress)}</strong>` : "");
+  const slots = SITE.preorder.pickupSlots || [];
+  if (slots.length) {
+    const sl = $("po-slot");
+    sl.innerHTML = `<legend>Choose your pickup time <span class="req">*</span></legend>
+      <p class="po-small">Pick the day and time you'll come by${SITE.preorder.pickupAddress ? " " + esc(SITE.preorder.pickupAddress) : ""}.</p>` +
+      slots.map((o) => `
+      <label class="freebie-opt slot-opt"><input type="radio" name="pickupSlot" value="${esc(o.key)}">
+        <span><strong>${esc(o.day)} ${esc(o.date)}</strong><small>${esc(o.time)}</small></span></label>`).join("");
+    sl.hidden = false;
+  }
   if (SITE.freebie) {
     const fb = $("po-freebie");
     fb.innerHTML = `<legend>${esc(SITE.freebie.title)} <span class="req">*</span></legend>
@@ -186,13 +212,16 @@ function buildOrderForm() {
     items.forEach((m, i) => (body.items[m.name] = qty(i)));
     const pick = form.querySelector('input[name="freebie"]:checked');
     body.freebie = pick ? pick.value : "";
+    const slotPick = form.querySelector('input[name="pickupSlot"]:checked');
+    body.pickupSlot = slotPick ? slotPick.value : "";
     // Name, phone, and email are all required
     const problem =
       !body.name.trim() ? ["name", "Please add your name."] :
       body.phone.replace(/\D/g, "").length < 10 ? ["phone", "Please add your phone number (10 digits)."] :
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email.trim()) ? ["email", "Please add a valid email address."] :
       !Object.values(body.items).some((q) => q > 0) ? [null, "Pick at least one bakery item. The free treat comes with an order, not on its own."] :
-      SITE.freebie && !body.freebie ? [null, "Please pick your free " + SITE.freebie.options.map((f) => f.name.toLowerCase()).join(" or ") + "."] : null;
+      SITE.freebie && !body.freebie ? [null, "Please pick your free " + SITE.freebie.options.map((f) => f.name.toLowerCase()).join(" or ") + "."] :
+      slots.length && !body.pickupSlot ? [null, "Please choose your pickup time."] : null;
     if (problem) {
       err.textContent = problem[1];
       err.hidden = false;
@@ -210,6 +239,12 @@ function buildOrderForm() {
       $("po-done-list").innerHTML = (data.items || []).map((it) => `<li>${it.qty} &times; ${esc(it.name)}</li>`).join("") +
         (data.freebie ? `<li class="free-line">+ FREE ${esc(data.freebie)}</li>` : "");
       $("po-done-total").textContent = money(data.total || 0);
+      const slot = slotByKey(data.pickupSlot);
+      if (slot) {
+        $("po-done-pickup").innerHTML = `Pickup: <strong>${esc(slot.label)}</strong>` +
+          (SITE.preorder.pickupAddress ? `<br>${esc(SITE.preorder.pickupAddress)}` : "");
+        $("po-done-pickup").hidden = false;
+      }
       $("po-done-id").textContent = data.id || "";
       const pay = SITE.payment;
       $("po-done-venmo").textContent = "@" + pay.venmo;
@@ -227,6 +262,11 @@ function buildOrderForm() {
   });
 }
 
+const promoPickup = () => {
+  const slots = SITE.preorder.pickupSlots || [];
+  return slots.length ? ` Pickup is ${slots.map((s) => `${s.day} ${s.date}`).join(" or ")}, just in time for Thanksgiving.` : "";
+};
+
 // Home page pre-order pop-up. Shows once per visit (not again after it's closed).
 function showPromo() {
   const box = $("promo");
@@ -235,11 +275,11 @@ function showPromo() {
   if (state === "open") {
     $("promo-eyebrow").textContent = "Now open";
     $("promo-title").textContent = "Pre-orders are open!";
-    if (SITE.preorder.closesOn) $("promo-text").textContent = `Get your order in by ${dueText()}. Every pre-order comes with a FREE holiday jam or honey butter!`;
+    if (SITE.preorder.closesOn) $("promo-text").textContent = `Get your order in by ${dueText()}.${promoPickup()} Every pre-order comes with a FREE holiday jam or honey butter!`;
   } else if (state === "upcoming") {
     $("promo-eyebrow").textContent = "Coming soon";
     $("promo-title").textContent = `Pre-orders open ${opensText()}`;
-    if (SITE.preorder.closesOn) $("promo-text").textContent = `Order window runs ${opensText()} through ${dueText()}. Every pre-order comes with a FREE holiday jam or honey butter!`;
+    if (SITE.preorder.closesOn) $("promo-text").textContent = `Order window runs ${opensText()} through ${dueText()}.${promoPickup()} Every pre-order comes with a FREE holiday jam or honey butter!`;
   }
   const close = () => {
     box.hidden = true;
@@ -257,18 +297,26 @@ function showPromo() {
   }, 300);
 }
 
+// Short "pick up Tue 11/24 or Wed 11/25" line for the main page
+function pickupLine() {
+  const slots = SITE.preorder.pickupSlots || [];
+  if (!slots.length) return "";
+  return `<br><span class="pickup-line">${esc(SITE.preorder.title || "Pickup")}: pick up ${slots.map((s) => `<strong>${esc(s.day.slice(0, 3))} ${esc(s.date)}</strong> (${esc(s.time)})`).join(" or ")}</span>`;
+}
+
 // "This pre-order only" banner for the free holiday treat (main page + pre-order page)
 function renderFreebiePromo() {
   const box = $("freebie-promo");
   const f = SITE.freebie;
   if (!f || preorderState() === "closed") return; // hide once this round is over
   // Pre-order page already shows the dates right above, so only the main page repeats them
-  const dates = SITE.preorder.closesOn && !$("po-status") ? ` &middot; ${opensText().slice(0, 5)} to ${dueText().slice(0, 5)}` : "";
+  const home = !$("po-status");
+  const dates = SITE.preorder.closesOn && home ? ` &middot; ${opensText().slice(0, 5)} to ${dueText().slice(0, 5)}` : "";
   box.classList.add("freebie-strip");
   box.innerHTML = `
     <span class="freebie-badge">This pre-order only</span>
-    <p>FREE <strong>${f.options.map((o) => esc(o.name)).join("</strong> or <strong>")}</strong> with every pre-order${dates}</p>
-    ${$("po-status") ? "" : '<a href="preorder.html">Pre-order &rarr;</a>'}`;
+    <p>FREE <strong>${f.options.map((o) => esc(o.name)).join("</strong> or <strong>")}</strong> with every pre-order${dates}${home ? pickupLine() : ""}</p>
+    ${home ? '<a href="preorder.html">Pre-order &rarr;</a>' : ""}`;
   box.hidden = false;
 }
 

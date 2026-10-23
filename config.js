@@ -25,7 +25,15 @@ const SITE = {
     forceClosed: false,                       // true = closed no matter what the dates say
     opensOn: "2026-11-02T00:00:00-07:00",     // opens 11/02/2026 at midnight
     closesOn: "2026-11-18T00:00:00-07:00",    // all orders in by end of 11/17/2026 (closes at midnight)
-    pickup: "Pick up at the next pop-up. Pre-orders are paid ahead by Venmo.",
+    // This round is the Thanksgiving break pre-order. Customers pick one of these pickup times
+    // on the order form. The first slot is the default for orders placed before slots existed.
+    title: "Thanksgiving break pre-order",
+    pickupSlots: [
+      { key: "tue", day: "Tuesday", date: "11/24", time: "4pm to 7pm", label: "Tuesday 11/24, 4pm to 7pm" },
+      { key: "wed", day: "Wednesday", date: "11/25", time: "10am to 1pm", label: "Wednesday 11/25, 10am to 1pm" },
+    ],
+    pickupAddress: "4138 Cedargate Drive, Fort Collins, CO 80526",
+    pickup: "Pre-orders are paid ahead by Venmo. Pick up at the address below on the day you choose.",
     closedMessage: "Pre-orders are closed right now. Check back when the window opens, or follow on Instagram so you don't miss it.",
     openMessage: "Reserve your loaves and cookies before they're gone.",
     closedAfterMessage: "This round of pre-orders is closed. Thank you! Follow on Instagram to hear about the next one.",
