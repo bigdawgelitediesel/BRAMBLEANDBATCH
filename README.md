@@ -20,7 +20,7 @@ Website for Bramble & Batch, Abby's small-batch pop-up bakery in Fort Collins, C
 Almost everything lives in **`config.js`**:
 - `menu`: items, descriptions, **prices**, photos, per-order max
 - `preorder.opensOn` / `closesOn` / `forceClosed`: when pre-orders are open (Mountain time)
-- `preorder.pickupSlots` / `preorder.pickupAddress` / `preorder.title`: the pickup days customers choose between (Thanksgiving round: Tue 11/24 4-7pm or Wed 11/25 10am-1pm at 4138 Cedargate Drive). Shown on the home page strip, the pre-order page, the order form, and as a tag in the portal (Tuesday orders sort above Wednesday; filter dropdown has both). Orders placed before slots existed count as the first slot.
+- `preorder.pickupSlots` / `preorder.pickupAddress` / `preorder.title`: the pickup days customers choose between (Thanksgiving round: Tue 11/24 4-7pm or Wed 11/25 10am-1pm at 4138 Cedargate Drive). Shown on the home page strip, the pre-order page, the order form, and as a tag in the portal (Tuesday orders sort above Wednesday; filter dropdown has both). Each open order has a Switch to Tue/Wed button with an Are you sure? pop-up. Orders placed before slots existed count as the first slot.
 - `preorder.pickup`: pickup / payment line on the order form
 - `instagram`: Abby's Instagram link
 

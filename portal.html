@@ -99,6 +99,16 @@
   </div>
 </div>
 
+<div id="slot-modal" class="promo" role="dialog" aria-modal="true" aria-labelledby="slot-title" hidden>
+  <div class="promo-card">
+    <p class="eyebrow">Switch pickup day</p>
+    <h2 id="slot-title">Are you sure?</h2>
+    <p id="slot-text"></p>
+    <button id="slot-yes" class="btn" type="button">Yes, switch it</button>
+    <button id="slot-no" class="promo-later" type="button">No, keep it</button>
+  </div>
+</div>
+
 <script src="config.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -144,6 +154,7 @@ async function load() {
 const FLAGS = [["paid", "Paid"], ["ready", "Bagged & ready"], ["pickedUp", "Picked up"]];
 const SLOTS = SITE.preorder.pickupSlots || [];
 const slotOf = (o) => SLOTS.find((s) => s.key === o.pickupSlot) || SLOTS[0];
+const otherSlot = (o) => SLOTS.length > 1 ? SLOTS[(SLOTS.indexOf(slotOf(o)) + 1) % SLOTS.length] : null;
 const slotIndex = (o) => Math.max(0, SLOTS.findIndex((s) => s.key === (slotOf(o) || {}).key));
 const FILTERS = {
   all: () => true,
@@ -184,7 +195,7 @@ function itemTotals(list) {
 function rowHtml(o) {
   return `
     <tr class="${o.cancelled ? "is-cancelled" : isDone(o) ? "" : o.pickedUp ? "is-picked" : ""}">
-      <td><strong>${esc(o.name)}</strong><br><small>#${esc(o.id)}</small>${slotOf(o) ? `<br><span class="slot-tag slot-${esc(slotOf(o).key)}">${esc(slotOf(o).day)} ${esc(slotOf(o).date)}</span>` : ""}${o.earlyAccess ? `<br><span class="early-tag">Early access</span>` : ""}</td>
+      <td><strong>${esc(o.name)}</strong><br><small>#${esc(o.id)}</small>${slotOf(o) ? `<br><span class="slot-tag slot-${esc(slotOf(o).key)}">${esc(slotOf(o).day)} ${esc(slotOf(o).date)}</span>` : ""}${otherSlot(o) && !o.cancelled && !isDone(o) ? `<br><button class="slot-btn" type="button" data-slot="${o.id}">Switch to ${esc(otherSlot(o).day.slice(0, 3))}</button>` : ""}${o.earlyAccess ? `<br><span class="early-tag">Early access</span>` : ""}</td>
       <td>${o.phone ? `<a href="tel:${esc(o.phone)}">${esc(o.phone)}</a><br>` : ""}${o.email ? `<a href="mailto:${esc(o.email)}">${esc(o.email)}</a>` : ""}</td>
       <td>${o.items.map((it) => `${it.qty} &times; ${esc(it.name)}`).join("<br>")}${o.freebie ? `<br><span class="free-tag">FREE ${esc(o.freebie)}</span>` : ""}</td>
       <td>${money(o.total)}</td>
@@ -264,8 +275,33 @@ $("dash").addEventListener("change", async (e) => {
 let cancelId = null;
 const closeCancel = () => { $("cancel-modal").hidden = true; cancelId = null; };
 
+// Switch pickup day: button opens an "Are you sure?" pop-up; Yes moves the order to the other day
+let slotId = null;
+const closeSlot = () => { $("slot-modal").hidden = true; slotId = null; };
+$("slot-yes").addEventListener("click", async () => {
+  const o = data.orders.find((o) => o.id === slotId);
+  if (!o) return;
+  $("slot-yes").disabled = true;
+  $("slot-yes").textContent = "Switching...";
+  try { await api("PATCH", { id: o.id, field: "pickupSlot", value: otherSlot(o).key }); } catch (ex) { alert(ex.message); }
+  $("slot-yes").disabled = false;
+  $("slot-yes").textContent = "Yes, switch it";
+  closeSlot();
+  load();
+});
+$("slot-no").addEventListener("click", closeSlot);
+$("slot-modal").addEventListener("click", (e) => { if (e.target === $("slot-modal")) closeSlot(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("slot-modal").hidden) closeSlot(); });
+
 $("dash").addEventListener("click", async (e) => {
-  const { cancel, undo } = e.target.dataset;
+  const { cancel, undo, slot } = e.target.dataset;
+  if (slot) {
+    const o = data.orders.find((o) => o.id === slot);
+    slotId = slot;
+    $("slot-text").innerHTML = `Move <strong>${esc(o.name)}</strong>'s order (#${esc(o.id)}) from <strong>${esc(slotOf(o).label)}</strong> to <strong>${esc(otherSlot(o).label)}</strong>?<br><small>Let them know, since they picked the other day.</small>`;
+    $("slot-modal").hidden = false;
+    $("slot-no").focus();
+  }
   if (cancel) {
     const o = data.orders.find((o) => o.id === cancel);
     cancelId = cancel;
