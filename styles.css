@@ -553,3 +553,5 @@ body.no-scroll { overflow: hidden; }
 .slot-tag { display: inline-block; margin-top: 0.3rem; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; padding: 0.15rem 0.55rem; border-radius: 999px; white-space: nowrap; color: #3f5732; background: #e3e8d8; }
 .slot-tag.slot-wed { color: #5a3a7a; background: #ebe3f2; }
 .orders tr.is-cancelled td .slot-tag { text-decoration: none; }
+.slot-btn { margin-top: 0.3rem; border: 1px solid var(--line); background: #fff; font: inherit; font-size: 0.78rem; font-weight: 700; color: var(--muted); padding: 0.15rem 0.55rem; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+.slot-btn:hover { color: var(--ink); border-color: var(--ink); }
