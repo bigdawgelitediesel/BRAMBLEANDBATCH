@@ -28,11 +28,13 @@ Portal password is the Vercel env var `ADMIN_PASSWORD` (currently 8015).
 
 ## Deploy
 
+Vercel is connected to this GitHub repo, so **merging to `main` deploys to production on its own** (usually within a minute). Pull requests get their own preview link, posted by the Vercel bot on the PR.
+
 ```
 git add -A && git commit -m "..." && git push
-vercel deploy --prod --yes
 ```
-(Pushing alone does not deploy.)
+
+If you ever need to force a deploy by hand: `vercel deploy --prod --yes`.
 
 ## How orders are stored
 
