@@ -3,13 +3,16 @@
 //
 // POST   /api/orders                      -> customer places an order (only while pre-orders are open)
 // GET    /api/orders     [x-admin-password] -> all orders + running totals
-// PATCH  /api/orders     [x-admin-password] {id, field, value} -> set paid / ready (bagged) / pickedUp / cancelled
+// PATCH  /api/orders     [x-admin-password] {id, field, value} -> set paid / ready (bagged) / pickedUp / cancelled, or pickupSlot (tue/wed)
 // DELETE /api/orders?id= [x-admin-password] -> remove an order
 
 const { put, get, list, del } = require("@vercel/blob");
 const { SITE, preorderState } = require("../config.js");
 
 const PREFIX = "orders/";
+const SLOTS = (SITE.preorder.pickupSlots || []).map((s) => s.key);
+// Orders placed before pickup slots existed count as the first slot (Tuesday)
+const withSlot = (o) => (o && SLOTS.length && !SLOTS.includes(o.pickupSlot) ? { ...o, pickupSlot: SLOTS[0] } : o);
 
 function send(res, code, obj) {
   res.statusCode = code;
@@ -50,7 +53,7 @@ async function allOrders() {
     page.blobs.forEach((b) => paths.push(b.pathname));
     cursor = page.hasMore ? page.cursor : undefined;
   } while (cursor);
-  const orders = (await Promise.all(paths.map(readBlob))).filter(Boolean);
+  const orders = (await Promise.all(paths.map(readBlob))).filter(Boolean).map(withSlot);
   return orders.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
@@ -119,6 +122,12 @@ module.exports = async (req, res) => {
         }
       }
 
+      let pickupSlot = "";
+      if (SLOTS.length) {
+        pickupSlot = clean(b.pickupSlot, 20);
+        if (!SLOTS.includes(pickupSlot)) return send(res, 400, { error: "Please choose a pickup time." });
+      }
+
       const createdAt = new Date().toISOString();
       const id = Math.random().toString(36).slice(2, 8).toUpperCase();
       const order = {
@@ -126,13 +135,14 @@ module.exports = async (req, res) => {
         total: items.reduce((s, it) => s + it.qty * it.price, 0),
         earlyAccess: !isOpen,
         freebie,
+        pickupSlot,
         paid: false,
         ready: false,
         pickedUp: false,
         path: `${PREFIX}${createdAt.replace(/[:.]/g, "-")}-${id}.json`,
       };
       await writeOrder(order);
-      return send(res, 200, { ok: true, id, total: order.total, items, freebie });
+      return send(res, 200, { ok: true, id, total: order.total, items, freebie, pickupSlot });
     }
 
     if (!isAdmin(req)) return send(res, 401, { error: "Wrong password." });
@@ -146,8 +156,13 @@ module.exports = async (req, res) => {
       const b = await readBody(req);
       const order = await findOrder(b.id);
       if (!order) return send(res, 404, { error: "Order not found." });
-      if (!["paid", "ready", "pickedUp", "cancelled"].includes(b.field)) return send(res, 400, { error: "Unknown field." });
-      order[b.field] = !!b.value;
+      if (b.field === "pickupSlot") {
+        if (!SLOTS.includes(b.value)) return send(res, 400, { error: "Unknown pickup time." });
+        order.pickupSlot = b.value;
+      } else {
+        if (!["paid", "ready", "pickedUp", "cancelled"].includes(b.field)) return send(res, 400, { error: "Unknown field." });
+        order[b.field] = !!b.value;
+      }
       await writeOrder(order);
       return send(res, 200, { ok: true });
     }

@@ -57,6 +57,8 @@
         <option value="unready">Not bagged yet</option>
         <option value="waiting">Not picked up yet</option>
         <option value="cancelled">Cancelled</option>
+        <option value="tue">Tuesday pickups</option>
+        <option value="wed">Wednesday pickups</option>
       </select>
     </div>
     <div class="table-wrap">
@@ -140,12 +142,17 @@ async function load() {
 }
 
 const FLAGS = [["paid", "Paid"], ["ready", "Bagged & ready"], ["pickedUp", "Picked up"]];
+const SLOTS = SITE.preorder.pickupSlots || [];
+const slotOf = (o) => SLOTS.find((s) => s.key === o.pickupSlot) || SLOTS[0];
+const slotIndex = (o) => Math.max(0, SLOTS.findIndex((s) => s.key === (slotOf(o) || {}).key));
 const FILTERS = {
   all: () => true,
   unpaid: (o) => !o.cancelled && !o.paid,
   unready: (o) => !o.cancelled && !o.ready,
   waiting: (o) => !o.cancelled && !o.pickedUp,
   cancelled: (o) => o.cancelled,
+  tue: (o) => !o.cancelled && slotOf(o).key === "tue",
+  wed: (o) => !o.cancelled && slotOf(o).key === "wed",
 };
 
 // An order is done (archived) once it's paid, bagged, and picked up
@@ -177,7 +184,7 @@ function itemTotals(list) {
 function rowHtml(o) {
   return `
     <tr class="${o.cancelled ? "is-cancelled" : isDone(o) ? "" : o.pickedUp ? "is-picked" : ""}">
-      <td><strong>${esc(o.name)}</strong><br><small>#${esc(o.id)}</small>${o.earlyAccess ? `<br><span class="early-tag">Early access</span>` : ""}</td>
+      <td><strong>${esc(o.name)}</strong><br><small>#${esc(o.id)}</small>${slotOf(o) ? `<br><span class="slot-tag slot-${esc(slotOf(o).key)}">${esc(slotOf(o).day)} ${esc(slotOf(o).date)}</span>` : ""}${o.earlyAccess ? `<br><span class="early-tag">Early access</span>` : ""}</td>
       <td>${o.phone ? `<a href="tel:${esc(o.phone)}">${esc(o.phone)}</a><br>` : ""}${o.email ? `<a href="mailto:${esc(o.email)}">${esc(o.email)}</a>` : ""}</td>
       <td>${o.items.map((it) => `${it.qty} &times; ${esc(it.name)}`).join("<br>")}${o.freebie ? `<br><span class="free-tag">FREE ${esc(o.freebie)}</span>` : ""}</td>
       <td>${money(o.total)}</td>
@@ -204,7 +211,8 @@ function render() {
   $("totals").innerHTML =
     `<div class="total-card total-main"><span>${money(revenue - collected)}</span><small>still to collect</small><em>${orders.length - count("paid")} ${orders.length - count("paid") === 1 ? "order" : "orders"} not paid yet</em></div>` +
     `<div class="total-card total-main"><span>${money(collected)}</span><small>collected</small><em>of ${money(revenue)} total revenue</em></div>` +
-    `<div class="total-card total-main"><span>${orders.length}</span><small>orders</small><em>${count("ready")} bagged &middot; ${count("pickedUp")} picked up</em></div>`;
+    `<div class="total-card total-main"><span>${orders.length}</span><small>orders</small><em>${count("ready")} bagged &middot; ${count("pickedUp")} picked up</em></div>` +
+    (SLOTS.length ? `<div class="total-card total-main"><span>${SLOTS.map((s) => orders.filter((o) => slotOf(o).key === s.key).length).join(" / ")}</span><small>${SLOTS.map((s) => esc(s.day.slice(0, 3))).join(" / ")} pickups</small><em>${SLOTS.map((s) => `${esc(s.day.slice(0, 3))} ${esc(s.date)} ${esc(s.time)}`).join(" &middot; ")}</em></div>` : "");
   $("item-totals").innerHTML = Object.entries(t).map(([name, v]) =>
       `<div class="total-card"><span>${v.qty}</span><small>${esc(name)}</small><em>${v.qty - (v.ready || 0)} still to bag &middot; ${money(v.revenue)}</em></div>`).join("") + freebieCards(orders, "open");
 
@@ -212,7 +220,7 @@ function render() {
   const keep = FILTERS[$("filter").value] || FILTERS.all;
   const match = (o) => !q || [o.name, o.phone, o.email, o.id].join(" ").toLowerCase().includes(q);
   const shown = open.filter((o) => keep(o) && match(o))
-    .sort((a, b) => (a.cancelled ? 1 : 0) - (b.cancelled ? 1 : 0)); // cancelled at the bottom
+    .sort((a, b) => ((a.cancelled ? 1 : 0) - (b.cancelled ? 1 : 0)) || (slotIndex(a) - slotIndex(b))); // cancelled at the bottom, then Tuesday pickups before Wednesday
 
   $("rows").innerHTML = shown.map(rowHtml).join("");
   $("empty").hidden = open.length > 0;
@@ -291,10 +299,10 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("canc
 $("csv").addEventListener("click", () => {
   const names = Object.keys(data.totals);
   const cell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const head = ["Order #", "Ordered", "Name", "Phone", "Email", ...names, "Total", "Free gift", "Paid", "Bagged & ready", "Picked up", "Cancelled", "Archived", "Notes"];
+  const head = ["Order #", "Ordered", "Name", "Phone", "Email", "Pickup", ...names, "Total", "Free gift", "Paid", "Bagged & ready", "Picked up", "Cancelled", "Archived", "Notes"];
   const lines = data.orders.map((o) => {
     const q = Object.fromEntries(o.items.map((it) => [it.name, it.qty]));
-    return [o.id, new Date(o.createdAt).toLocaleString("en-US"), o.name, o.phone, o.email,
+    return [o.id, new Date(o.createdAt).toLocaleString("en-US"), o.name, o.phone, o.email, slotOf(o) ? slotOf(o).label : "",
       ...names.map((n) => q[n] || 0), o.total, o.freebie || "", o.paid ? "yes" : "no", o.ready ? "yes" : "no", o.pickedUp ? "yes" : "no", o.cancelled ? "yes" : "no", isDone(o) ? "yes" : "no", o.notes].map(cell).join(",");
   });
   const blob = new Blob([[head.map(cell).join(","), ...lines].join("\n")], { type: "text/csv" });

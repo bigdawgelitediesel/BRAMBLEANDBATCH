@@ -31,6 +31,7 @@
   <h1 id="po-headline">Pre-orders open 11/02/2026</h1>
   <p id="po-window" class="po-window"></p>
   <p id="po-message" class="preorder-msg"></p>
+  <div id="po-pickup-info" class="po-pickup-info" hidden></div>
   <div id="freebie-promo" class="freebie-promo freebie-promo-tight" hidden></div>
   <div id="po-countdown" class="countdown countdown-light" hidden>
     <div><span id="po-d">0</span><small>days</small></div>
@@ -51,6 +52,7 @@
     <p id="po-pickup" class="po-pickup"></p>
     <div id="po-items" class="po-items"></div>
     <fieldset id="po-freebie" class="po-freebie" hidden></fieldset>
+    <fieldset id="po-slot" class="po-slot" hidden></fieldset>
     <div class="po-total-row"><span>Total</span><strong id="po-total">$0</strong></div>
     <p id="po-pay" class="po-pay"></p>
     <label>Name <span class="req">*</span><input name="name" autocomplete="name" required maxlength="80"></label>
@@ -69,6 +71,7 @@
     <h2>One more step: pay to lock it in</h2>
     <ul id="po-done-list"></ul>
     <p>Total due now: <strong id="po-done-total"></strong></p>
+    <p id="po-done-pickup" class="po-done-pickup" hidden></p>
     <div class="po-venmo">
       <p><strong>Venmo <span id="po-done-venmo"></span></strong> to confirm your order. Abby starts baking once your payment comes in.</p>
       <p class="po-small">Put <strong>Order #<span id="po-done-id2"></span></strong> in the Venmo note. If Venmo asks for the last 4 digits of her phone, it's <strong id="po-done-last4"></strong>.</p>

@@ -528,3 +528,28 @@ body.no-scroll { overflow: hidden; }
 .freebie-promo-tight.freebie-strip { margin: 0.4rem auto 1.8rem; }
 
 .po-confirm-text { margin: 1rem 0 0; }
+
+/* Thanksgiving pickup: days + address box on the pre-order page */
+.po-pickup-info {
+  background: var(--paper); border: 1.5px solid var(--gold); border-radius: 20px;
+  padding: 1.1rem 1.2rem 1rem; margin: 0 auto 1.6rem; max-width: 520px; text-align: center;
+}
+.po-pickup-title { font-family: var(--display); font-weight: 600; font-size: 1.25rem; margin: 0 0 0.2rem; }
+.po-pickup-lead { color: var(--muted); font-size: 0.92rem; margin: 0 0 0.8rem; }
+.po-pickup-days { list-style: none; margin: 0 0 0.8rem; padding: 0; display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.po-pickup-days li { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 0.6rem 0.8rem; }
+.po-pickup-days strong { display: block; font-family: var(--display); font-weight: 600; font-size: 1.05rem; }
+.po-pickup-days span { color: var(--muted); font-size: 0.92rem; }
+.po-pickup-addr { margin: 0; font-size: 0.95rem; }
+.po-pickup-addr a { color: var(--ink); font-weight: 700; }
+.po-pickup strong { color: var(--ink); }
+.po-slot { border: 1.5px solid var(--leaf); border-radius: 18px; padding: 1rem 1.1rem 0.6rem; margin: 0 0 1.4rem; background: #f6f8f1; }
+.po-slot legend { font-family: var(--display); font-weight: 600; font-size: 1.15rem; padding: 0 0.4rem; }
+.po-slot .po-small { margin: 0 0 0.7rem; }
+.po-form .slot-opt input { display: inline-block; width: 18px; height: 18px; margin: 0; accent-color: var(--leaf); flex: none; }
+.po-done-pickup { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 0.7rem 0.9rem; }
+.pickup-line { display: inline-block; margin-top: 0.2rem; }
+/* Portal: which pickup day an order is for */
+.slot-tag { display: inline-block; margin-top: 0.3rem; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; padding: 0.15rem 0.55rem; border-radius: 999px; white-space: nowrap; color: #3f5732; background: #e3e8d8; }
+.slot-tag.slot-wed { color: #5a3a7a; background: #ebe3f2; }
+.orders tr.is-cancelled td .slot-tag { text-decoration: none; }
