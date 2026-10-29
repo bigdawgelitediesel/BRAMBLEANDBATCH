@@ -3,9 +3,9 @@
 Website for Bramble & Batch, Abby's small-batch pop-up bakery in Fort Collins, Colorado.
 "A small bakery with big dreams. Made from scratch in the heart of Fort Collins."
 
-- Live site: https://brambleandbatch.vercel.app
-- Pre-orders: https://brambleandbatch.vercel.app/preorder.html
-- Owner portal: https://brambleandbatch.vercel.app/portal.html (also linked as "Owner login" in the footer)
+- Live site: https://thebrambleandbatch.com
+- Pre-orders: https://thebrambleandbatch.com/preorder.html
+- Owner portal: https://thebrambleandbatch.com/portal.html (also linked as "Owner login" in the footer)
 
 ## Pages
 
