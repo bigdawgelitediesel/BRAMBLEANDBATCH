@@ -555,3 +555,21 @@ body.no-scroll { overflow: hidden; }
 .orders tr.is-cancelled td .slot-tag { text-decoration: none; }
 .slot-btn { margin-top: 0.3rem; border: 1px solid var(--line); background: #fff; font: inherit; font-size: 0.78rem; font-weight: 700; color: var(--muted); padding: 0.15rem 0.55rem; border-radius: 999px; cursor: pointer; white-space: nowrap; }
 .slot-btn:hover { color: var(--ink); border-color: var(--ink); }
+
+/* Portal shopping list */
+.shopping { margin-top: 3rem; }
+.shop-store { border: 1px solid var(--line); border-radius: 16px; background: #fff; margin: 1rem 0; overflow: hidden; }
+.shop-store.done { opacity: 0.6; }
+.shop-store-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.9rem 1.1rem; background: var(--cream, #f5f0ec); border-bottom: 1px solid var(--line); }
+.shop-store-head h3 { font-size: 1.2rem; font-weight: 600; margin: 0; }
+.shop-store-head small { color: var(--muted); }
+.shop-store-sum { text-align: right; }
+.shop-store-sum span { display: block; font-weight: 700; font-size: 1.15rem; }
+.shop-store-sum small { color: var(--muted); }
+.shop-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.shop-table th, .shop-table td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.shop-table th { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.shop-table tr:last-child td { border-bottom: 0; }
+.shop-table tr.done td { color: var(--muted); }
+.shop-table tr.done .shop-item strong { text-decoration: line-through; }
+.shop-table .notes { max-width: 260px; }

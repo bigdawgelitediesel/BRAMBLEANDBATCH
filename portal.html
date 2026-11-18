@@ -85,6 +85,16 @@
         </div>
       </details>
     </section>
+
+    <section class="shopping" id="shopping">
+      <div class="portal-tools">
+        <h2 class="portal-h2">Shopping list</h2>
+        <label class="portal-check"><input type="checkbox" id="shop-hide-bought"> Hide bought</label>
+      </div>
+      <p id="shop-updated" class="portal-state"></p>
+      <div id="shop-totals" class="totals totals-main"></div>
+      <div id="shop-stores"></div>
+    </section>
   </section>
 
 </main>
@@ -110,6 +120,7 @@
 </div>
 
 <script src="config.js"></script>
+<script src="shopping.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 const money = (n) => "$" + Number(n).toFixed(Number(n) % 1 ? 2 : 0);
@@ -117,6 +128,7 @@ const esc = (s) => String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 const STATE_TEXT = { open: "Pre-orders are OPEN right now.", upcoming: "Pre-orders are closed until they open.", closed: "Pre-orders are closed." };
 let pw = "";
 let data = { orders: [], totals: {} };
+let bought = {};
 
 try { pw = sessionStorage.getItem("bb-pw") || ""; } catch (e) {}
 
@@ -131,9 +143,21 @@ async function api(method, body, query = "") {
   return j;
 }
 
+async function shopApi(method, body) {
+  const r = await fetch("/api/shopping", {
+    method,
+    headers: { "x-admin-password": pw, ...(body ? { "Content-Type": "application/json" } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(j.error || "Error"), { status: r.status });
+  return j;
+}
+
 async function load() {
   try {
     data = await api("GET");
+    try { bought = (await shopApi("GET")).bought || {}; } catch (e) { bought = {}; }
     try { sessionStorage.setItem("bb-pw", pw); } catch (e) {}
     $("login").hidden = true;
     $("dash").hidden = false;
@@ -209,6 +233,45 @@ function rowHtml(o) {
     </tr>`;
 }
 
+// Shopping list: items/amounts/prices/stores come from shopping.js, checkmarks from /api/shopping
+function renderShopping() {
+  const L = window.SHOPPING;
+  if (!L) return;
+  const hide = $("shop-hide-bought").checked;
+  const all = L.stores.flatMap((st) => st.items.map((it) => ({ ...it, store: st.name })));
+  const lineTotal = (it) => (it.price || 0) * (it.packs || 1);
+  const total = all.reduce((s, it) => s + lineTotal(it), 0);
+  const spent = all.filter((it) => bought[it.id]).reduce((s, it) => s + lineTotal(it), 0);
+  const nBought = all.filter((it) => bought[it.id]).length;
+  $("shop-updated").textContent = L.note || "";
+  $("shop-totals").innerHTML =
+    `<div class="total-card total-main"><span>${money(total)}</span><small>whole list</small><em>${all.length} items across ${L.stores.length} stores</em></div>` +
+    `<div class="total-card total-main"><span>${money(spent)}</span><small>bought so far</small><em>${nBought} of ${all.length} items</em></div>` +
+    `<div class="total-card total-main"><span>${money(total - spent)}</span><small>still to buy</small><em>${all.length - nBought} items left</em></div>`;
+  $("shop-stores").innerHTML = L.stores.map((st) => {
+    const items = st.items.filter((it) => !hide || !bought[it.id]);
+    const sub = st.items.reduce((s, it) => s + lineTotal(it), 0);
+    const got = st.items.filter((it) => bought[it.id]).length;
+    return `<div class="shop-store ${got === st.items.length ? "done" : ""}">
+      <div class="shop-store-head">
+        <div><h3>${esc(st.name)}</h3>${st.where ? `<small>${esc(st.where)}</small>` : ""}</div>
+        <div class="shop-store-sum"><span>${money(sub)}</span><small>${got} of ${st.items.length} bought</small></div>
+      </div>
+      ${items.length ? `<div class="table-wrap"><table class="shop-table">
+        <thead><tr><th></th><th>Item</th><th>She needs</th><th>Buy</th><th>Price</th><th>Line</th><th>Note</th></tr></thead>
+        <tbody>${items.map((it) => `<tr class="${bought[it.id] ? "done" : ""}">
+          <td><label class="flag ${bought[it.id] ? "on" : ""}"><input type="checkbox" data-shop="${esc(it.id)}" ${bought[it.id] ? "checked" : ""}> ${bought[it.id] ? "Bought" : "Buy"}</label></td>
+          <td class="shop-item"><strong>${esc(it.name)}</strong>${it.product ? `<br><small>${esc(it.product)}</small>` : ""}</td>
+          <td>${esc(it.need || "")}</td>
+          <td>${it.packs || 1} &times; ${esc(it.pkg || "")}</td>
+          <td>${it.price != null ? money(it.price) : "?"}</td>
+          <td><strong>${money(lineTotal(it))}</strong></td>
+          <td class="notes"><small>${esc(it.note || "")}</small></td>
+        </tr>`).join("")}</tbody></table></div>` : `<p class="portal-empty">All bought here.</p>`}
+    </div>`;
+  }).join("");
+}
+
 function render() {
   const open = data.orders.filter((o) => !isDone(o));
   const done = data.orders.filter(isDone);
@@ -249,6 +312,7 @@ function render() {
   $("archive-count").textContent = done.length;
   $("archive-rows").innerHTML = done.filter(match).map(rowHtml).join("") ||
     `<tr><td colspan="8" class="portal-empty">No completed orders yet.</td></tr>`;
+  renderShopping();
 }
 
 $("login-form").addEventListener("submit", (e) => { e.preventDefault(); pw = $("pw").value; load(); });
@@ -261,7 +325,16 @@ $("logout").addEventListener("click", (e) => {
   location.reload();
 });
 
+$("shop-hide-bought").addEventListener("change", renderShopping);
 $("dash").addEventListener("change", async (e) => {
+  if (e.target.dataset.shop) {
+    const sid = e.target.dataset.shop;
+    e.target.disabled = true;
+    try { bought = (await shopApi("PATCH", { id: sid, value: e.target.checked })).bought || bought; }
+    catch (ex) { alert(ex.message); }
+    renderShopping();
+    return;
+  }
   const { id, flag } = e.target.dataset;
   if (!id || !flag) return;
   const o = data.orders.find((o) => o.id === id);
