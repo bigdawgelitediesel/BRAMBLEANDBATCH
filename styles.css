@@ -573,3 +573,5 @@ body.no-scroll { overflow: hidden; }
 .shop-table tr.done td { color: var(--muted); }
 .shop-table tr.done .shop-item strong { text-decoration: line-through; }
 .shop-table .notes { max-width: 260px; }
+.bake-table .bake-time { white-space: nowrap; width: 1%; }
+.bake-table tr.done .shop-item { text-decoration: line-through; }

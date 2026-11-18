@@ -95,6 +95,16 @@
       <div id="shop-totals" class="totals totals-main"></div>
       <div id="shop-stores"></div>
     </section>
+
+    <section class="shopping" id="bakeplan">
+      <div class="portal-tools">
+        <h2 class="portal-h2">Bake plan</h2>
+        <label class="portal-check"><input type="checkbox" id="bake-hide-done"> Hide done</label>
+      </div>
+      <p id="bake-updated" class="portal-state"></p>
+      <div id="bake-totals" class="totals totals-main"></div>
+      <div id="bake-days"></div>
+    </section>
   </section>
 
 </main>
@@ -121,6 +131,7 @@
 
 <script src="config.js"></script>
 <script src="shopping.js"></script>
+<script src="bakeplan.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 const money = (n) => "$" + Number(n).toFixed(Number(n) % 1 ? 2 : 0);
@@ -272,6 +283,36 @@ function renderShopping() {
   }).join("");
 }
 
+// Bake plan: days/tasks from bakeplan.js, checkmarks share /api/shopping with ids prefixed "bake-"
+function renderBakePlan() {
+  const P = window.BAKEPLAN;
+  if (!P) return;
+  const hide = $("bake-hide-done").checked;
+  const key = (t) => "bake-" + t.id;
+  const all = P.days.flatMap((d) => d.tasks);
+  const nDone = all.filter((t) => bought[key(t)]).length;
+  $("bake-updated").textContent = P.note || "";
+  $("bake-totals").innerHTML =
+    `<div class="total-card total-main"><span>${nDone} / ${all.length}</span><small>tasks done</small><em>${P.days.length} days</em></div>` +
+    P.days.map((d) => `<div class="total-card"><span>${d.tasks.filter((t) => bought[key(t)]).length}/${d.tasks.length}</span><small>${esc(d.name.split(" ")[0])}</small><em>${esc(d.summary)}</em></div>`).join("");
+  $("bake-days").innerHTML = P.days.map((d) => {
+    const tasks = d.tasks.filter((t) => !hide || !bought[key(t)]);
+    const got = d.tasks.filter((t) => bought[key(t)]).length;
+    return `<div class="shop-store ${got === d.tasks.length ? "done" : ""}">
+      <div class="shop-store-head">
+        <div><h3>${esc(d.name)}</h3><small>${esc(d.summary)}</small></div>
+        <div class="shop-store-sum"><span>${got} / ${d.tasks.length}</span><small>done</small></div>
+      </div>
+      ${tasks.length ? `<div class="table-wrap"><table class="shop-table bake-table">
+        <tbody>${tasks.map((t) => `<tr class="${bought[key(t)] ? "done" : ""}">
+          <td><label class="flag ${bought[key(t)] ? "on" : ""}"><input type="checkbox" data-shop="${esc(key(t))}" ${bought[key(t)] ? "checked" : ""}> ${bought[key(t)] ? "Done" : "To do"}</label></td>
+          <td class="bake-time"><strong>${esc(t.time)}</strong></td>
+          <td class="shop-item">${esc(t.text)}</td>
+        </tr>`).join("")}</tbody></table></div>` : `<p class="portal-empty">All done.</p>`}
+    </div>`;
+  }).join("");
+}
+
 function render() {
   const open = data.orders.filter((o) => !isDone(o));
   const done = data.orders.filter(isDone);
@@ -313,6 +354,7 @@ function render() {
   $("archive-rows").innerHTML = done.filter(match).map(rowHtml).join("") ||
     `<tr><td colspan="8" class="portal-empty">No completed orders yet.</td></tr>`;
   renderShopping();
+  renderBakePlan();
 }
 
 $("login-form").addEventListener("submit", (e) => { e.preventDefault(); pw = $("pw").value; load(); });
@@ -326,6 +368,7 @@ $("logout").addEventListener("click", (e) => {
 });
 
 $("shop-hide-bought").addEventListener("change", renderShopping);
+$("bake-hide-done").addEventListener("change", renderBakePlan);
 $("dash").addEventListener("change", async (e) => {
   if (e.target.dataset.shop) {
     const sid = e.target.dataset.shop;
@@ -333,6 +376,7 @@ $("dash").addEventListener("change", async (e) => {
     try { bought = (await shopApi("PATCH", { id: sid, value: e.target.checked })).bought || bought; }
     catch (ex) { alert(ex.message); }
     renderShopping();
+    renderBakePlan();
     return;
   }
   const { id, flag } = e.target.dataset;
